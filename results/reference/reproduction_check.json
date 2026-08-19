@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "date": "2026-08-19",
+  "recomputed_with_refactored_package": true,
+  "analysis_subjects": 210,
+  "model_summary_common_columns_exact": true,
+  "metrics_by_repeat_common_columns_exact": true,
+  "paired_comparisons_common_columns_exact": true,
+  "maximum_numeric_delta": 0.0,
+  "maps_checked": 1070,
+  "contralesional_nonzero_values": 0,
+  "legacy_predictive_feature_maximum_delta": 0.0,
+  "notes": "The new paired-comparison table adds an explicit mean_advantage_ci_excludes_zero column; all ten legacy columns are identical."
+}

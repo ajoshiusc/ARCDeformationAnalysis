@@ -1,0 +1,11 @@
+feature,n_cases,n_comparable,n_incompatible_missingness,n_above_tolerance,maximum_absolute_delta,absolute_tolerance
+mass_effect_3_20mm_magnitude_mm_median,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_magnitude_mm_p95,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_radial_mm_median,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_mean_absolute_radial_mm,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_outward_integral_ml_mm,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_inward_integral_ml_mm,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_logjac_expansion_integral_ml,214,214,0,0,0.0,1e-10
+mass_effect_3_20mm_logjac_compression_integral_ml,214,214,0,0,0.0,1e-10
+registration_sensitivity_3_20mm_mm_median,214,212,0,0,0.0,1e-10
+contralateral_affine_fit_rmse_mm,214,214,0,0,0.0,1e-10

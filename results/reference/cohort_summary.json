@@ -1,0 +1,77 @@
+{
+  "manifest_cases": 214,
+  "clinical_matches": 211,
+  "analysis_subjects": 210,
+  "left_dominant": 209,
+  "right_dominant": 1,
+  "age_at_stroke": {
+    "n": 210,
+    "median": 58.5,
+    "q1": 50.0,
+    "q3": 66.0,
+    "digits": 1
+  },
+  "wab_days": {
+    "n": 210,
+    "median": 721.0,
+    "q1": 404.25,
+    "q3": 1657.75,
+    "digits": 0
+  },
+  "wab_aq": {
+    "n": 210,
+    "median": 69.05000000000001,
+    "q1": 40.849999999999994,
+    "q3": 89.975,
+    "digits": 1
+  },
+  "lesion_volume_ml": {
+    "n": 210,
+    "median": 79.131,
+    "q1": 34.45375,
+    "q3": 154.68225,
+    "digits": 1
+  },
+  "magnitude_median_mm": {
+    "n": 210,
+    "median": 6.202759385108948,
+    "q1": 5.3161773681640625,
+    "q3": 7.839027047157288,
+    "digits": 2
+  },
+  "radial_median_mm": {
+    "n": 210,
+    "median": 0.1575931422412395,
+    "q1": -0.669465497136116,
+    "q3": 0.9934946671128272,
+    "digits": 2
+  },
+  "absolute_radial_mean_mm": {
+    "n": 210,
+    "median": 3.527779698371887,
+    "q1": 2.9490544199943542,
+    "q3": 4.481454491615295,
+    "digits": 2
+  },
+  "folding_percent": {
+    "n": 210,
+    "median": 1.4915913500869948,
+    "q1": 1.2953539676115,
+    "q3": 1.6552344779873571,
+    "digits": 2
+  },
+  "registration_sensitivity_median_mm": {
+    "n": 210,
+    "median": 4.792027950286865,
+    "q1": 3.6405607163906097,
+    "q3": 6.227352261543274,
+    "digits": 2
+  },
+  "signal_sensitivity_ratio": {
+    "n": 210,
+    "median": 1.3412756775440826,
+    "q1": 0.9988658256739897,
+    "q3": 1.7066714897879922,
+    "digits": 2
+  }
+}

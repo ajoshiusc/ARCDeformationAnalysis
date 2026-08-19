@@ -1,0 +1,23 @@
+[paths]
+arc_root = "/home/ajoshi/project2_ajoshi_1183/data/ARC"
+mass_effect_manifest = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv"
+clinical_table = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv"
+uncertainty_manifest = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv"
+output_root = "results/runs"
+
+[model]
+outcome = "wab_aq"
+outer_folds = 5
+inner_folds = 4
+repeats = 20
+bootstrap_samples = 5000
+seed = 2026
+n_jobs = 4
+require_deformation_qc = true
+maximum_folding_fraction = 0.05
+minimum_near_lesion_voxels = 1000
+minimum_uncertainty_coverage = 0.90
+
+[audit]
+expected_cases = 214
+check_maps = false

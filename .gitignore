@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+dist/
+build/
+
+# Local configuration and protected participant-level products
+.env
+config/local.toml
+data/raw/
+data/derivatives/
+results/runs/
+results/private/
+*.nii
+*.nii.gz
+
+# LaTeX build products (the reviewed PDF is retained)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*~

@@ -1,0 +1,348 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
+
+\graphicspath{{generated/}{../results/reference/figures/}}
+\input{generated/results.tex}
+
+\title{Contralateral-Normalized Deformation after Chronic Stroke:\
+Cross-sectional Description and Aphasia Prediction in ARC}
+\author{Anonymized Authors\\Anonymized Affiliations}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent\textbf{Purpose:}
+Nonlinear registration fields around chronic stroke lesions contain anatomical
+signal but also premorbid asymmetry, tissue collapse, and registration error.
+We developed a contralateral-normalized lesion-associated deformation proxy and
+tested whether it improves held-out prediction of Western Aphasia Battery
+Aphasia Quotient (WAB-AQ) beyond conventional lesion features.
+\textbf{Materials and Methods:}
+From the Aphasia Recovery Cohort, we analyzed one T1-weighted acquisition per
+participant. An affine component fitted in the contralesional hemisphere was
+removed from the SVReg inverse coordinate map. The residual was contrasted with
+its mirrored contralesional homolog and retained only in the lesional
+hemisphere. Lesion and inpainting-target voxels were excluded. Magnitude,
+radial displacement, and log-Jacobian asymmetry were summarized 3--20~mm from
+the lesion. Ridge models were evaluated by 5-fold nested cross-validation
+repeated 20 times on identical splits.
+\textbf{Results:}
+Of \ManifestN{} deformation cases, \ClinicalMatchN{} matched the clinical
+table and one failed laterality quality control, leaving \AnalysisN{}
+participants. Median near-lesion magnitude was \MagnitudeMedian~mm (IQR
+\MagnitudeQOne--\MagnitudeQThree). The conventional lesion model achieved mean
+absolute error (MAE) \StandardMAE{} AQ points; adding deformation yielded
+\DeformationMAE{}. The participant-level mean MAE advantage was
+\DeformationAdvantage{} points (95\% bootstrap CI \DeformationCILow{} to
+\DeformationCIHigh{}). Adding deformation after lesion-uncertainty features
+gave \AfterUncertaintyAdvantage{} points (CI \AfterUncertaintyCILow{} to
+\AfterUncertaintyCIHigh{}).
+\textbf{Conclusion:}
+The proxy provides an auditable cross-sectional description of lesion-adjacent
+registration geometry, but its incremental predictive benefit was not
+statistically robust because the primary mean-effect interval included zero.
+It must not be interpreted as pressure or physical ground-truth mass effect.
+\end{abstract}
+
+\section{Introduction}
+
+Spatial normalization of brains with focal lesions is difficult because an
+intensity-driven transformation may deform normal anatomy to reduce mismatch at
+the lesion \citep{Brett2001,Andersen2010}. Lesion masking and filling can reduce
+this bias \citep{Sdika2009}, but the resulting transformation remains a mixture
+of global pose, natural anatomical variation, lesion-associated remodeling, and
+algorithmic error. These qualifications are especially important in chronic
+stroke, where lesions and whole-brain morphology can continue to evolve years
+after the event \citep{Seghier2014}.
+
+Deformation-based morphometry uses displacement and transformation Jacobians to
+describe local shape or volume differences \citep{Chung2001}. Tumor studies
+have related modeled deformation to radiological mass-effect scores
+\citep{Zacharaki2009}, but that mechanistic interpretation does not transfer
+directly to chronic infarction. Without a premorbid or acute reference scan, a
+single chronic image cannot identify the causal displacement produced by the
+stroke. A useful cross-sectional descriptor must therefore separate its
+measurable geometric definition from an unidentifiable physical claim.
+
+The Aphasia Recovery Cohort (ARC) provides a large, openly released chronic
+stroke imaging and behavioral resource \citep{Gibson2024}. Lesion anatomy is a
+strong predictor of aphasia severity, while extralesional morphometry may
+contain additional information \citep{Teghipco2024}. We asked whether a compact
+set of lesion-adjacent deformation summaries adds held-out predictive value
+beyond age, assessment delay, lesion size, laterality, and language-network
+lesion burden. Our contributions are: (1) a within-participant,
+contralateral-normalized field with exact lesional-only support; (2) explicit
+registration-sensitivity and folding quality controls; and (3) a
+leakage-resistant, repeated nested-CV evaluation designed to support a valid
+negative result.
+
+\section{Materials and Methods}
+
+\subsection{Data and cohort construction}
+
+ARC release 1.0.2 contains de-identified BIDS imaging and participant-level
+behavioral variables from chronic stroke survivors \citep{Gibson2024}. WAB-AQ
+summarizes spontaneous speech, comprehension, repetition, and naming on a
+0--100 scale, with lower values indicating greater impairment
+\citep{Kertesz2007}. The source dataset reports informed consent under
+University of South Carolina institutional review and exemption of the
+anonymized public release from further review \citep{Gibson2024}.
+
+The analysis used one acquisition per participant from the case table paired to
+the participant's WAB record. The deformation manifest contained \ManifestN{}
+unique cases. Completed deformation, clinical, and optional uncertainty tables
+were joined one-to-one by acquisition identifier. Multiple acquisitions per
+participant after joining were prohibited. The final cohort had median age at
+stroke \AgeMedian{} years (IQR \AgeQOne--\AgeQThree), WAB assessment delay
+\WABDaysMedian{} days (IQR \WABDaysQOne--\WABDaysQThree), WAB-AQ \AQMedian{}
+(IQR \AQQOne--\AQQThree), and lesion volume \LesionVolumeMedian~mL (IQR
+\LesionVolumeQOne--\LesionVolumeQThree). Lesions were left-dominant in
+\LeftLesionN{} cases and right-dominant in \RightLesionN{}.
+
+Upstream lesion masks were produced by a full-resolution nnU-Net
+\citep{Isensee2021} trained on ATLAS v2 \citep{Liew2022}. Inpainted T1 images
+were used only to provide a continuous substrate for BrainSuite v23a processing
+\citep{Shattuck2002} and surface-constrained volumetric registration (SVReg)
+\citep{Joshi2009}. No generated intensity, label, or morphometric measurement
+inside the lesion or dilated inpainting target was treated as biological data.
+
+\subsection{Contralateral-normalized deformation}
+
+Let $F(\mathbf{x})$ be the SVReg inverse coordinate map giving the
+subject-voxel coordinate corresponding to atlas voxel $\mathbf{x}$. On valid
+contralesional brain voxels more than two voxels from the midline, we fitted
+\begin{equation}
+ F_A(\mathbf{x}) = M\mathbf{x}+\mathbf{b}
+\end{equation}
+by least squares with five iterations of median-absolute-deviation outlier
+rejection. The affine-removed residual, expressed in atlas-axis millimeters,
+was
+\begin{equation}
+ \mathbf{u}(\mathbf{x}) = M^{-1}\{F(\mathbf{x})-F_A(\mathbf{x})\}.
+ \label{eq:residual}
+\end{equation}
+Masked normalized Gaussian smoothing used a 2-mm kernel.
+
+Let $R$ reflect position through the symmetric atlas midline and reverse a
+vector's left--right component. The lesion-associated asymmetry field was
+\begin{equation}
+ \mathbf{u}_L(\mathbf{x}) = \mathbf{u}(\mathbf{x}) - R\mathbf{u}(R\mathbf{x}).
+ \label{eq:asymmetry}
+\end{equation}
+Both members of every mirrored pair had to lie within valid atlas and mapped
+subject brain masks. The lesion, the 3-mm-dilated inpainting target, and its
+mirror were excluded. Equation~\ref{eq:asymmetry} was retained only in the
+lesional hemisphere; all values in the reference hemisphere were stored as
+exact zeros.
+
+Magnitude was $m=\lVert\mathbf{u}_L\rVert$. The gradient of the Euclidean
+distance outside the lesion defined outward unit normal $\mathbf{n}$, and
+radial displacement was $r=\mathbf{u}_L\cdot\mathbf{n}$ (positive outward,
+negative inward). Local volume change was
+$J=\det(I+\nabla\mathbf{u})$. For positive paired Jacobians we calculated
+$\Delta\log J=\log J(\mathbf{x})-\log J(R\mathbf{x})$. Summaries were retained
+in 3--5, 5--10, 10--20, and 20--40~mm shells.
+
+\subsection{Quality control and sensitivity}
+
+Eligible cases required lesion laterality index
+$|V_L-V_R|/(V_L+V_R)\geq0.80$, nonpositive-Jacobian fraction no greater than
+0.05, and at least 1,000 valid voxels 3--20~mm from the lesion. The direct,
+non-inpainted SVReg field was normalized identically when available. The
+magnitude of the inpainted-minus-direct field difference was recorded as
+registration sensitivity, not as biological deformation.
+
+The predictive analysis used eight prespecified 3--20~mm summaries: median and
+95th-percentile magnitude; median and mean-absolute radial displacement;
+outward and inward radial integrals; and positive and negative log-Jacobian
+integrals. A sensitivity model additionally included median registration
+sensitivity and contralateral affine-fit RMSE.
+
+\subsection{Aphasia prediction and inference}
+
+The clinical model contained age at stroke and $\log(1+\text{WAB days})$. The
+conventional lesion model added total lesion volume, left and right
+language-network lesion burden, and lesion laterality. The primary incremental
+model added the eight deformation summaries. Optional models added soft-lesion
+and boundary-ambiguity features, with and without deformation.
+
+Within each training fold, missing predictors were median-imputed,
+standardized, and fit by ridge regression. A four-fold inner loop selected the
+penalty from 17 log-spaced values between $10^{-4}$ and $10^4$ by MAE. A
+five-fold shuffled outer loop was repeated 20 times using identical splits for
+all models. Repeating every preprocessing and selection step inside the outer
+loop limits model-selection bias \citep{Varma2006}.
+
+Performance measures were out-of-fold MAE, RMSE, $R^2$, and Pearson $r$. The
+primary effect was each participant's absolute error under the conventional
+model minus error under the deformation model, averaged over repeats; positive
+values favor deformation. A 5,000-resample participant bootstrap estimated its
+95\% CI. Two-sided paired Wilcoxon tests were Holm-adjusted across comparisons
+with the conventional model \citep{Holm1979}. Because the signed-rank test and
+the bootstrap mean interval address different estimands, predictive superiority
+required the prespecified mean-advantage interval to exclude zero.
+
+\section{Results}
+
+\subsection{Cohort flow and deformation characteristics}
+
+Of \ManifestN{} unique deformation cases, \ClinicalMatchN{} matched the
+clinical table. One bilateral case failed laterality QC, leaving \AnalysisN{}
+participants for every model. Median nonpositive-Jacobian fraction was
+\FoldingPctMedian\% (IQR \FoldingPctQOne--\FoldingPctQThree\%).
+
+Across participants, median 3--20~mm magnitude was \MagnitudeMedian~mm (IQR
+\MagnitudeQOne--\MagnitudeQThree), median radial displacement was
+\RadialMedian~mm (IQR \RadialQOne--\RadialQThree), and mean-absolute radial
+displacement was \AbsRadialMedian~mm (IQR
+\AbsRadialQOne--\AbsRadialQThree). Median direct-versus-inpainted registration
+sensitivity was \SensitivityMedian~mm (IQR
+\SensitivityQOne--\SensitivityQThree), giving a proxy-to-sensitivity ratio of
+\SignalSensitivityRatioMedian{} (IQR \SignalSensitivityRatioQOne--
+\SignalSensitivityRatioQThree). Thus, the deformation scale was comparable to
+its preprocessing sensitivity, reinforcing the need for cautious
+cross-sectional interpretation.
+
+Figure~\ref{fig:deformation} shows M2238, selected as a high-asymmetry
+development case for technical visualization rather than as a representative
+participant. The cyan lesion and dashed yellow exclusion target are displayed
+on the original lesion-preserving T1; effect maps contain no target voxels.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{deformation_m2238.pdf}
+\caption{\textbf{Lesion-associated deformation construction in M2238.}
+(A) Acquisition-native T1 with lesion (cyan) and excluded inpainting target
+(yellow dashed). (B) Lesional-only deformation magnitude. (C) Radial
+displacement (negative inward, positive outward). (D) Lesional-minus-mirrored
+contralesional log-Jacobian. This preselected development case illustrates
+field construction and is not subject-specific evidence of pressure.}
+\label{fig:deformation}
+\end{figure}
+
+\subsection{Held-out AQ prediction}
+
+The clinical-only model performed poorly (MAE \ClinicalMAE{}; $R^2$
+\ClinicalRSquared). The conventional lesion model achieved MAE \StandardMAE{},
+RMSE \StandardRMSE{}, and $R^2$ \StandardRSquared. Adding deformation reduced
+MAE to \DeformationMAE{}, whereas the registration-QC sensitivity model yielded
+\DeformationQCMAE{} (Table~\ref{tab:models}; Fig.~\ref{fig:model}).
+
+The primary mean MAE advantage was \DeformationAdvantage{} points (95\%
+bootstrap CI \DeformationCILow{} to \DeformationCIHigh{}), and
+\DeformationImprovedFraction{} of participants had lower repeated-CV error.
+The adjusted signed-rank result was $p_H=\DeformationP$, but the mean-effect CI
+crossed zero. Under the prespecified decision rule, deformation therefore did
+not establish incremental predictive benefit. Adding registration-QC features
+gave a similar advantage of \DeformationQCAdvantage{} points (CI
+\DeformationQCCILow{} to \DeformationQCCIHigh{}).
+
+The lesion-uncertainty model had MAE \UncertaintyMAE{}. Adding deformation to
+that model produced MAE \CombinedMAE{} and a mean advantage of
+\AfterUncertaintyAdvantage{} points (CI \AfterUncertaintyCILow{} to
+\AfterUncertaintyCIHigh{}; $p=\AfterUncertaintyP$), providing no evidence of
+additive value.
+
+\begin{table}[t]
+\centering
+\caption{Out-of-fold performance averaged across 20 repeated outer-CV splits on
+the identical \AnalysisN-participant cohort.}
+\label{tab:models}
+\small
+\input{generated/model_table.tex}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{model_comparison.pdf}
+\caption{\textbf{Repeated nested-CV model comparison.} (A) Aggregate MAE for
+each complete outer-CV repeat. (B) Participant-level mean MAE advantage relative
+to the conventional lesion model; positive values favor the augmented model.
+Error bars are participant-bootstrap 95\% CIs. Every augmented-model interval
+crosses zero; the deliberately under-specified clinical-only negative-control
+interval does not.}
+\label{fig:model}
+\end{figure}
+
+\section{Discussion}
+
+We constructed a fully auditable lesion-associated deformation proxy from
+registration fields in a large chronic stroke cohort. The method removes a
+contralaterally fitted affine component, subtracts mirrored control geometry,
+excludes generated targets and their homologs, and stores the effect only on
+the lesional side. These choices prevent a reflected mathematical copy from
+being mistaken for contralesional biology and provide explicit spatial support
+for every scalar summary.
+
+The prediction experiment yielded a small apparent improvement over a
+conventional lesion model, but the primary participant-bootstrap interval
+included zero. The significant signed-rank result does not contradict that
+conclusion: it concerns ranks of paired errors, whereas the prespecified effect
+was their mean difference. A skewed error distribution can produce these two
+outcomes. Reporting both, while conditioning the superiority claim on the
+mean-effect interval, avoids converting a distributional shift into an
+unsupported average-benefit claim.
+
+Deformation added no value after soft lesion and boundary-ambiguity features.
+One explanation is informational overlap: deformation integrals and lesion
+uncertainty both scale with lesion extent and boundary complexity even after
+total volume and laterality are included. Another is measurement noise. Median
+proxy magnitude was only modestly larger than median direct-versus-inpainted
+registration sensitivity, so improved correspondences and residual algorithmic
+variation may obscure smaller behavioral signal.
+
+The field is not physical ground-truth mass effect. Positive radial displacement
+does not establish ongoing pressure, and negative displacement can reflect
+collapse or ventricular expansion rather than reversal of acute displacement.
+The contralateral hemisphere is an internal reference, not a normative atlas;
+natural asymmetry and bilateral pathology violate its assumptions. The method
+is therefore restricted to strongly unilateral lesions and should be described
+as cross-sectional registration geometry.
+
+Limitations include the absence of premorbid or acute reference scans, external
+validation, and expert ground truth for the deformation itself. The cohort is
+almost entirely left-lesioned because ARC focuses on aphasia. Upstream lesion
+delineation and inpainting can influence correspondences despite exclusion of
+target voxels. Repeated cross-validation reduces split dependence but does not
+replace validation in an independent cohort. Future work should include
+longitudinal deformation, non-inpainted and normative controls, tissue-specific
+summaries, uncertainty calibration, and preregistered external testing.
+
+\section{Conclusion}
+
+Contralateral normalization yields a transparent, lesional-only description of
+chronic stroke registration asymmetry. In ARC, deformation features produced a
+small reduction in held-out AQ error, but the primary confidence interval
+crossed zero and deformation added nothing after lesion uncertainty. The result
+supports the proxy as a research descriptor and does not support a claim of
+robust incremental prediction, pressure estimation, or causal mass effect.
+
+\section*{Data and Code Availability}
+
+ARC is available through OpenNeuro as dataset ds004884, release 1.0.2
+(\url{https://doi.org/10.18112/openneuro.ds004884.v1.0.2}).
+The complete analysis code, tests, frozen aggregate outputs, and manuscript
+sources accompany this submission. Participant-level derived images and joined
+clinical tables are not redistributed by this repository.
+
+\section*{Declarations}
+
+Author identities, contributions, funding, acknowledgments, and competing
+interest statements are withheld in this blinded manuscript and must be
+supplied from the journal submission system.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

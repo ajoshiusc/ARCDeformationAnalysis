@@ -1,0 +1,18 @@
+{
+  "cases": 214,
+  "subjects": 214,
+  "method_version": "contralateral_control_lesional_only_v2",
+  "qc_pass": 213,
+  "qc_fail": 1,
+  "lesion_side_counts": {
+    "left": 213,
+    "right": 1
+  },
+  "status": "pass",
+  "failure_records": 0,
+  "completion_markers": 214,
+  "stored_maps_checked": 1070,
+  "contralesional_nonzero_values": 0,
+  "contralesional_maximum_absolute_value": 0.0,
+  "legacy_maximum_absolute_feature_delta": 0.0
+}
