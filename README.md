@@ -5,7 +5,9 @@ deformation analysis in the [Aphasia Recovery Cohort](https://doi.org/10.18112/o
 The package constructs a lesional-only displacement proxy, validates a
 stationary log-velocity embedding, performs a periodic Helmholtz--Hodge
 decomposition, and tests incremental prediction of Western Aphasia Battery
-Aphasia Quotient (WAB-AQ).
+Aphasia Quotient (WAB-AQ). An independent ANTs/SyN subanalysis repeats the
+complete workflow in symmetric MNI152 space and quantifies
+registration-pipeline sensitivity.
 
 The result is conservative. In 210 QC-passing participants, adding displacement
 features to a conventional lesion model changed held-out MAE by 0.38 AQ points
@@ -13,6 +15,10 @@ features to a conventional lesion model changed held-out MAE by 0.38 AQ points
 not improve prediction after lesion or displacement features. Hodge descriptor
 ranks were stable across eight smoothing, taper, padding, and grid perturbations,
 but adjusted component--AQ associations did not survive multiplicity correction.
+The ANTs/MNI152 deformation model showed a small 0.81-point advantage (95% CI
+0.004 to 1.608), unlike the inconclusive SVReg result; weak agreement for some
+cross-pipeline descriptors makes this a pipeline-sensitivity finding rather
+than a registration-invariant biomarker.
 The analysis does not estimate pressure, physical tissue velocity, force, or
 causal mass effect.
 
@@ -25,6 +31,8 @@ causal mass effect.
 - `results/reference/`: aggregate, non-participant-level frozen results;
 - `paper/`: Imaging Neuroscience manuscript, supplement, cover letter, and
   verified bibliography;
+- `ants_mni152/`: ANTs forward/inverse mappings, aggregate pipeline comparison,
+  and standalone Supplementary Material 2;
 - `docs/`: input contracts, method specification, lesion-delineation boundary,
   and provenance.
 
@@ -42,7 +50,14 @@ Python 3.11 or newer is required.
 python -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 .venv/bin/pytest
-.venv/bin/ruff check src tests
+.venv/bin/ruff check src tests ants_mni152
+```
+
+Install the pinned ANTs and TemplateFlow dependencies only when running the
+independent registration analysis:
+
+```bash
+.venv/bin/pip install -e '.[ants,dev]'
 ```
 
 ## Reproduce the analysis
@@ -77,6 +92,18 @@ arc-deformation report \
 deformation case. `arc-deformation collect` rebuilds a deterministically sorted
 cohort manifest.
 
+The complete ANTs analysis is isolated in `ants_mni152/`. Its driver downloads
+the identified TemplateFlow reference when explicit template paths are not
+given, writes every participant transform outside the ARC root and repository,
+then freezes only de-identified aggregate results:
+
+```bash
+.venv/bin/python ants_mni152/run_analysis.py --help
+```
+
+See `ants_mni152/README.md` for the exact path contract, transform-direction
+convention, QC thresholds, resume behavior, and full command.
+
 ## Build the submission
 
 ```bash
@@ -88,7 +115,8 @@ and JSON outputs, then builds:
 
 - `paper/main.pdf`;
 - `paper/supplement.pdf`;
-- `paper/submission.pdf` (combined manuscript and supplement for first
+- `ants_mni152/paper/supplement_ants.pdf`;
+- `paper/submission.pdf` (combined manuscript and both supplements for first
   submission);
 - `paper/cover_letter.pdf`.
 

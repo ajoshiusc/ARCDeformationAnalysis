@@ -1,0 +1,21 @@
+[paths]
+arc_root = "/path/to/ARC"
+inpainting_manifest = "/path/to/ARC/derivatives/stroke_inpainting/manifest.csv"
+clinical_table = "/path/to/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv"
+uncertainty_manifest = "/path/to/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv"
+svreg_manifest = "/path/to/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv"
+svreg_hodge_manifest = "/path/to/private/svreg/hodge_manifest.csv"
+svreg_predictions = "/path/to/private/svreg/aq_mass_effect_predictions_long.csv"
+output_root = "/path/to/private/output/ants_mni152"
+
+[compute]
+registration_jobs = 8
+hodge_jobs = 8
+model_jobs = 4
+
+[model]
+outer_folds = 5
+inner_folds = 4
+repeats = 20
+bootstrap_samples = 5000
+seed = 2026

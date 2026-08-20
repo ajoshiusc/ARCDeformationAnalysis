@@ -1,0 +1,126 @@
+{
+  "manifest_cases": 214,
+  "clinical_matches": 211,
+  "analysis_subjects": 210,
+  "left_dominant": 209,
+  "right_dominant": 1,
+  "reported_sex": {
+    "female": 82,
+    "male": 128,
+    "other_or_missing": 0
+  },
+  "age_at_stroke": {
+    "n": 210,
+    "median": 58.5,
+    "q1": 50.0,
+    "q3": 66.0,
+    "digits": 1
+  },
+  "wab_days": {
+    "n": 210,
+    "median": 721.0,
+    "q1": 404.25,
+    "q3": 1657.75,
+    "digits": 0
+  },
+  "wab_aq": {
+    "n": 210,
+    "median": 69.05000000000001,
+    "q1": 40.849999999999994,
+    "q3": 89.975,
+    "digits": 1
+  },
+  "lesion_volume_ml": {
+    "n": 210,
+    "median": 79.131,
+    "q1": 34.45375,
+    "q3": 154.68225,
+    "digits": 1
+  },
+  "magnitude_median_mm": {
+    "n": 210,
+    "median": 4.3769590854644775,
+    "q1": 3.8239887952804565,
+    "q3": 5.142108976840973,
+    "digits": 2
+  },
+  "radial_median_mm": {
+    "n": 210,
+    "median": 0.0498341210186481,
+    "q1": -0.5789877101778984,
+    "q3": 0.7836779952049255,
+    "digits": 2
+  },
+  "absolute_radial_mean_mm": {
+    "n": 210,
+    "median": 2.458411693572998,
+    "q1": 2.1223559379577637,
+    "q3": 2.972922682762146,
+    "digits": 2
+  },
+  "folding_percent": {
+    "n": 210,
+    "median": 0.7730718624034,
+    "q1": 0.616011277808575,
+    "q3": 0.9615527595947501,
+    "digits": 2
+  },
+  "wab_type": {
+    "missing": 29,
+    "counts": {
+      "Broca": 77,
+      "Anomic": 57,
+      "Conduction": 25,
+      "Global": 13,
+      "Wernicke": 5,
+      "TranscorticalMotor": 4
+    }
+  },
+  "log_velocity_hodge": {
+    "extraction_cases": 214,
+    "extraction_qc_pass_cases": 214,
+    "total_rms_mm": {
+      "n": 210,
+      "median": 1.6594908876651882,
+      "q1": 1.4134372374926885,
+      "q3": 2.1337500039739314,
+      "digits": 2
+    },
+    "curl_free_energy_fraction": {
+      "n": 210,
+      "median": 0.29004998615342353,
+      "q1": 0.2602254023789904,
+      "q3": 0.33097625851608226,
+      "digits": 3
+    },
+    "divergence_free_energy_fraction": {
+      "n": 210,
+      "median": 0.6856815442454705,
+      "q1": 0.6508364225755023,
+      "q3": 0.7189870160272553,
+      "digits": 3
+    },
+    "harmonic_energy_fraction": {
+      "n": 210,
+      "median": 0.02392407831663245,
+      "q1": 0.015112550483301375,
+      "q3": 0.03256795501032255,
+      "digits": 3
+    },
+    "velocity_reconstruction_relative_rmse": {
+      "n": 210,
+      "median": 0.010224525343201899,
+      "q1": 0.008766482674008124,
+      "q3": 0.01226090113461305,
+      "digits": 3
+    },
+    "minimum_input_jacobian": {
+      "n": 210,
+      "median": 0.809680312871933,
+      "q1": 0.7687898576259613,
+      "q3": 0.8402074724435806,
+      "digits": 3
+    },
+    "analysis_qc_pass_n": 210
+  }
+}

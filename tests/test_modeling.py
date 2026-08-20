@@ -13,6 +13,7 @@ from arc_deformation.modeling import (
     ModelConfig,
     _partial_rank_correlation,
     adjusted_deformation_associations,
+    deformation_associations,
     holm_adjust,
     model_feature_sets,
     paired_comparisons,
@@ -147,3 +148,10 @@ def test_adjusted_associations_are_complete_and_deterministic() -> None:
     assert first["n_subjects"].eq(40).all()
     assert first["permutation_p_value_holm"].between(0, 1).all()
     pd.testing.assert_frame_equal(first, second)
+
+
+def test_descriptive_associations_skip_unavailable_registration_sensitivity() -> None:
+    design = _synthetic_design(30)
+    result = deformation_associations(design, "wab_aq", 100, 41)
+    assert len(result) == 6
+    assert not result["association"].str.contains("registration_sensitivity").any()

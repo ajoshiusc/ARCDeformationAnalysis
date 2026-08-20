@@ -13,12 +13,12 @@ The aggregate results in `results/reference/` were regenerated on 2026-08-19.
 
 Reference aggregate hashes:
 
-- `analysis_config.json`: `f24862d70076ee01e67ca7fe00d9e22c6549428a8564acdca53e6d39d70b8cf8`;
+- `analysis_config.json`: `cb1938ccd17e87dbf5961e242f25067b0d424ee5c4275ab7a28554979e7c0167`;
 - `hodge_summary.json`: `b920630fab7857b8c04ca0cef09876e4ac5a66b09b431587466c3e821de01acd`;
-- `hodge_config.json`: `14d7eebce814d6cd820278a375feb41df0ee9df1585a506dcb525a92cabb3ce2`;
+- `hodge_config.json`: `a5fb64aaba64fdd83ffc95e1a96ff968b2033df17a93bd469e9898a803166d85`;
 - `adjusted_deformation_associations.csv`: `91ecd750a403e47c19c0c4f08aff7a70642b34d17312e48475a6cf4efeb8d69a`;
 - `hodge_parameter_sensitivity.csv`: `04346ffdf849a9c039fcd051bd3d4bb3a0cba30644c8a061508c05ce45ceeca8`;
-- `hodge_parameter_sensitivity.json`: `17613a566e03c802e6f9f223e60b0d47c0dff51c942288fbe65eddc8c7df6510`;
+- `hodge_parameter_sensitivity.json`: `b99c7d27ae1cd43313b5b062ec89d4b2244344c7617398e8528aae1d3d726d48`;
 - `cohort_summary.json`: `df5a21bc1afb1bda8474f8797aac578beadbd8826861711243eddb2a87ca32cc`;
 - `reproduction_check.json`: `70f0e3f8f85976406c8c45716f03fb279708c46127e1ab39becf2e8b7f223f0f`.
 
@@ -26,7 +26,7 @@ Reference aggregate hashes:
 
 - 214 deformation cases and 214 unique participants were present.
 - 211 cases matched the one-scan-per-participant clinical table.
-- One matched case failed laterality QC (`sub-M2150`, laterality index 0.090).
+- One matched case failed laterality QC (laterality index 0.090).
 - 210 independent participants entered every model: 209 left-dominant and 1
   right-dominant lesion.
 - Lesion-uncertainty and QC-passing Hodge features had 100% coverage in the
@@ -112,3 +112,52 @@ The read-only spatial audit loaded 1,070 NIfTI maps (five per case), found zero
 nonzero or nonfinite contralesional values, and found zero v1-to-v2 change in
 the ten predictive deformation/QC features. All 214 completion markers were
 present and no processing-error record existed.
+
+## ANTs/MNI152 pipeline-sensitivity rerun
+
+The independent ANTs/MNI152 analysis was regenerated on 2026-08-20 for the
+same explicit 214-case selection. The inpainting manifest contained additional
+acquisitions; the primary SVReg manifest was used as a required one-to-one
+selection contract so that those acquisitions could not enter registration or
+modeling. All 214 registrations passed registration QC, 213 passed the combined
+registration/deformation criteria, and 210 clinically matched participants
+entered the models.
+
+The TemplateFlow reference identities were:
+
+- T1w SHA-256 `e0bdd27231960b3e930e86cf72b0d6bcf4a7d9e5195fb97e4c8f826f8d59c6e7`;
+- brain-mask SHA-256 `6bae185e10e6bcd871e0caedfaa88a362eaefaccab2e81b96f7fa8f36b7ad6f0`.
+
+Median brain-mask Dice was 0.9715 (minimum 0.8668), median point round-trip
+RMSE was 0.0749 mm (maximum 0.0939), and every raw SyN warp had zero observed
+nonpositive-Jacobian fraction. All 214 ANTs-derived log-domain embeddings
+passed QC; median exponentiation relative RMSE was 0.0102. A complete repeat of
+one case with the same seed and thread count reproduced every audited scalar,
+nine output images, and both warp fields exactly.
+
+The ANTs deformation model had MAE 15.61 versus 16.42 for the conventional
+lesion model. Its participant-level mean advantage was 0.81 AQ points (95%
+bootstrap CI 0.004 to 1.608; Holm-adjusted signed-rank p = 0.038). Hodge
+features alone had advantage -0.12 (-0.53 to 0.30). On identical participants
+and outer splits, ANTs-minus-SVReg MAE for the deformation model was -0.44
+(-1.20 to 0.27), so the direct pipeline contrast was inconclusive.
+
+Cross-pipeline rank agreement varied substantially: rho was 0.178 for median
+near-lesion magnitude, 0.130 for log-velocity RMS, 0.257 for curl-free energy
+fraction, and 0.259 for divergence-free energy fraction. Agreement for the
+eight displacement descriptors ranged from 0.178 to 0.842. These results are
+interpreted as whole-pipeline sensitivity because registration software,
+reference atlas, and grid resolution changed together.
+
+Selected aggregate file identities:
+
+- `analysis_provenance.json`: `0fd80567577429669e5b5aa01cfe10499efd3f5a0952410c8a967b4f0276b8a4`;
+- `model_summary.csv`: `2c177b6ac0e18e2083cf51deb4a10295f364adfd6b1327fb6227759cca886893`;
+- `paired_comparisons.csv`: `e00dc14ead1a29c7bb5e8bc58902039aed0af1226caa66c0ee4b1e603e3cbcd7`;
+- `descriptor_agreement.csv`: `52e00828c0906955fee4575aff1229031e986b9dd5407e743bbf3ca39aee7377`;
+- `predictive_method_comparison.csv`: `0d89bd65a50cc418f51dba49ec92a3db072f275e1d4be16d93ede446f520ec21`.
+
+The public freeze strips machine-local paths and retains only basenames,
+checksums, aggregate rows, software versions, and numerical settings. It does
+not retain case identifiers, participant rows, images, transforms, joined
+design matrices, or out-of-fold predictions.

@@ -1,0 +1,54 @@
+{
+  "method_version": "ants_mni152nlin2009asym_synquickrepro_2mm_v1",
+  "config": {
+    "registration_transform": "antsRegistrationSyNQuickRepro[s]",
+    "registration_spacing_mm": 2.0,
+    "random_seed": 2026,
+    "single_precision": true,
+    "mask_all_stages": true,
+    "smoothing_mm": 2.0,
+    "affine_fit_subsample": 2,
+    "minimum_laterality": 0.8,
+    "minimum_near_lesion_volume_mm3": 1000.0,
+    "minimum_brain_mask_dice": 0.7,
+    "maximum_cycle_rmse_mm": 0.5,
+    "maximum_raw_warp_folding_fraction": 0.001,
+    "cycle_sample_points": 2000
+  },
+  "template_geometry": {
+    "shape": [
+      197,
+      233,
+      189
+    ],
+    "spacing_mm": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "orientation": "RAS",
+    "midline_world_x_mm": 0.0,
+    "brain_mask_reflection_dice": 1.0
+  },
+  "template_path_basename": "tpl-MNI152NLin2009aSym_res-1_T1w.nii.gz",
+  "template_sha256": "e0bdd27231960b3e930e86cf72b0d6bcf4a7d9e5195fb97e4c8f826f8d59c6e7",
+  "template_mask_path_basename": "tpl-MNI152NLin2009aSym_res-1_desc-brain_mask.nii.gz",
+  "template_mask_sha256": "6bae185e10e6bcd871e0caedfaa88a362eaefaccab2e81b96f7fa8f36b7ad6f0",
+  "inpainting_manifest_basename": "manifest.csv",
+  "inpainting_manifest_sha256": "3cb2ca2d295296b3b41179261f99e1422b63fbdafc384b58038684783292b962",
+  "selection_manifest_basename": "mass_effect_manifest.csv",
+  "selection_manifest_sha256": "fc812c6d668e85ebdb999f1f6c4d4418bce745d94e2090eb2898503afe905098",
+  "software": {
+    "python": "3.13.5",
+    "antspyx": "0.6.1",
+    "templateflow": "25.1.2",
+    "nibabel": "5.4.2",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "scipy": "1.15.3"
+  },
+  "cases": 214,
+  "registration_qc_pass_cases": 214,
+  "deformation_qc_pass_cases": 213,
+  "reproducibility": "fixed random seed; one ITK thread per registration; deterministic case ordering; process-level parallelism only"
+}

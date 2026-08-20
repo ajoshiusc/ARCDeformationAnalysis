@@ -19,9 +19,12 @@ rejection. The nonlinear residual is returned to atlas axes:
 u(x) = M^-1 [F(x) - F_A(x)].
 ```
 
-For the current one-millimeter orthogonal atlas, voxel displacement and
+For the primary one-millimeter orthogonal atlas, voxel displacement and
 atlas-axis millimeters coincide. The implementation nevertheless applies atlas
-voxel spacing explicitly and validates geometry.
+voxel spacing explicitly and validates that the template is canonical RAS,
+has an odd left--right dimension, and places its center voxel at world x=0.
+These are required conditions for an axis-0 array reversal to represent
+anatomical midline reflection.
 
 If `R` reflects positions across the atlas midline and flips a vector's
 left-right component, the lesional asymmetry field is:
@@ -47,11 +50,16 @@ log-Jacobian integrals.
 
 ## Quality control
 
-A case passes if:
+A primary 1-mm case passes if:
 
 - lesion laterality index is at least 0.80;
 - nonpositive-Jacobian fraction is at most 0.05;
 - at least 1,000 valid voxels remain 3-20 mm from the lesion.
+
+The implementation stores this last criterion as a physical support threshold
+of 1,000 mm3. It remains 1,000 voxels at 1-mm resolution and becomes 125 voxels
+at 2-mm resolution. Affine-fit residuals are likewise reported in physical
+millimeters rather than implicitly assuming one-millimeter source voxels.
 
 Direct/non-inpainted and inpainted SVReg fields are normalized identically. The
 magnitude of their difference is registration sensitivity and is never treated
@@ -99,6 +107,34 @@ analysis. Expected numerical failures are retained as QC failures rather than
 causing the cohort run to abort. Aggregate outputs report QC counts, rank
 stability against the primary descriptors, and unadjusted AQ-association
 directions; case-level variant manifests remain private.
+
+## Independent ANTs/MNI152 pipeline analysis
+
+The `ants_mni152/` analysis repeats the complete workflow while changing the
+atlas-registration pipeline. It holds fixed the lesion-filled T1w inputs,
+lesion and inpainting-target masks, field definitions, clinical table, and
+statistical plan.
+
+- TemplateFlow provides `MNI152NLin2009aSym` T1w and brain-mask files with
+  recorded SHA-256 identities.
+- ANTsPy 0.6.1 performs reproducible rigid, affine, and SyN registration on a
+  2-mm isotropic grid using fixed and moving brain masks at every stage.
+- Each case uses seed 2026, single precision, and one ITK thread. Parallelism
+  occurs only across cases.
+- Both transform directions and both image-resampling directions are retained.
+  The forward point list maps fixed MNI points to moving subject points and
+  supplies the inverse coordinate map; the inverse list closes the point cycle.
+- Registration QC requires brain-mask Dice at least 0.70, point round-trip RMSE
+  no greater than 0.50 mm, and raw-warp nonpositive-Jacobian fraction no greater
+  than 0.001.
+- A 2-voxel Hodge stride retains the primary 4-mm physical analysis grid; all
+  other physical regularization and log-domain criteria are unchanged.
+
+The comparison reports descriptor rank agreement and direct predictive-error
+differences on common participants and identical outer-CV splits. Registration
+software, reference atlas, and working resolution change together, so this
+tests whole-pipeline dependence rather than an isolated ANTs software effect,
+physical truth, or formal equivalence.
 
 ## Prediction
 

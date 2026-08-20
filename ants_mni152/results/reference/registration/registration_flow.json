@@ -1,0 +1,8 @@
+{
+  "manifest_cases": 214,
+  "registration_qc_pass_cases": 214,
+  "deformation_qc_pass_cases": 213,
+  "left_dominant_cases": 212,
+  "right_dominant_cases": 2,
+  "participant_level_rows_retained": false
+}

@@ -14,13 +14,19 @@ Checked against the journal's official Guide for Authors on 2026-08-20.
 - Ethics/consent statement and public-dataset exemption identifier.
 - Data and Code Availability, Author Contributions, Funding, Declaration of
   Competing Interests, and generative-AI disclosure sections present.
-- Main manuscript, supplement, combined first-submission PDF, and cover-letter
-  sources build with `make submission`.
+- Main manuscript, primary supplement, standalone ANTs/MNI152 supplement,
+  combined first-submission PDF, and cover-letter sources build with
+  `make submission` without unresolved citations, references, or layout
+  warnings.
 - All numerical claims are generated from aggregate result files; no outcome is
   manually entered into the manuscript.
 - Pressure and physical-velocity claims are explicitly excluded.
 - Primary predictive results are unchanged after the robustness extension;
   adjusted associations and eight numerical Hodge variants are fully reported.
+- The 214-case ANTs/MNI152 pipeline rerun, registration QC, exact one-case
+  reproduction check, cross-pipeline descriptor agreement, same-split prediction
+  contrasts, and nonsignificant results are fully reported in Supplementary
+  Material 2.
 
 ## Author confirmation required before upload
 
@@ -42,10 +48,12 @@ These are factual declarations and are deliberately not inferred by software:
 
 - `paper/main.pdf` (main manuscript);
 - `paper/supplement.pdf` (supplementary material);
+- `ants_mni152/paper/supplement_ants.pdf` (Supplementary Material 2);
 - `paper/submission.pdf` (preferred all-in-one first-submission manuscript and
-  supplementary material);
+  both supplementary files);
 - figure PDFs/PNGs from `paper/generated/` and
-  `results/reference/figures/` if requested separately;
+  `results/reference/figures/`, plus `ants_mni152/paper/generated/`, if requested
+  separately;
 - `paper/cover_letter.pdf` after the confirmations above.
 
 Official requirements:

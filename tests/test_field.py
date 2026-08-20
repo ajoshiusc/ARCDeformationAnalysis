@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import nibabel as nib
 import numpy as np
 import pytest
 
+from arc_deformation.extract import _validate_atlas
 from arc_deformation.field import (
     NormalizedField,
     fit_robust_affine,
@@ -79,3 +81,16 @@ def test_robust_affine_recovers_known_map_with_outliers() -> None:
 def test_empty_lesion_is_rejected() -> None:
     with pytest.raises(ValueError, match="empty"):
         lesion_laterality(np.zeros((5, 5, 5), dtype=bool))
+
+
+def test_atlas_reflection_requires_world_zero_midpoint() -> None:
+    affine = np.eye(4)
+    affine[:3, 3] = (-4.0, -2.0, -2.0)
+    valid = nib.Nifti1Image(np.zeros((9, 5, 5), dtype=np.float32), affine)
+    assert _validate_atlas(valid) == (1.0, 1.0, 1.0)
+    shifted = nib.Nifti1Image(
+        np.zeros((9, 5, 5), dtype=np.float32),
+        affine + np.array([[0, 0, 0, 0.5], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]),
+    )
+    with pytest.raises(ValueError, match="world x=0"):
+        _validate_atlas(shifted)

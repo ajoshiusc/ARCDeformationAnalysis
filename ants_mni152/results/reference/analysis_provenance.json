@@ -1,0 +1,32 @@
+{
+  "freeze_policy": "No case identifiers, participant rows, image paths, transforms, joined design data, fold coefficients, or out-of-fold predictions are retained",
+  "private_input_hashes": {
+    "registration_manifest_sha256": "1a6fa40d0ffd1058a6eb5decf7abc9c5703d21c2d2e638218beaeb8567409ed3",
+    "hodge_manifest_sha256": "a421225aef70a9148d5a6999c4b140da4fcc5e1c1310c9f4f89b3d00aa19d1f2",
+    "predictions_sha256": "f7783feae1c7ebae528b147796a79261487db446919c1aee3260756e5c848b52"
+  },
+  "public_output_hashes": {
+    "README.md": "c6a6e30d8d6acee036e6d49a3f36f9ebbb19a063a44f8866dedf6bd6934f98ff",
+    "comparison/comparison_provenance.json": "54857a497ca3e97c69a7f6548877e1f011517a178046e2cfb1190b53c9301519",
+    "comparison/descriptor_agreement.csv": "52e00828c0906955fee4575aff1229031e986b9dd5407e743bbf3ca39aee7377",
+    "comparison/predictive_method_comparison.csv": "0d89bd65a50cc418f51dba49ec92a3db072f275e1d4be16d93ede446f520ec21",
+    "hodge/hodge_config.json": "98e979d721821bcca81b5b31c6bc1cf8a7ec6948b6c5ecfc1f84dc8909bd76d3",
+    "hodge/hodge_summary.json": "048fa5191e5766c70729d660581e2b48772d23e3f5063a45c439cb7a16c6a6f0",
+    "model/adjusted_deformation_associations.csv": "3ee3eb04a867ff6235b768a46924c7f1cae65df94687cc39fbbe9ebb5672bf2f",
+    "model/analysis_config.json": "8542cbd243122d95e0f46b4b563555fc617a29a8c2843ebf7e42bdcaa4c2b629",
+    "model/coefficient_summary.csv": "f9aece75a389f9b6629f7747f9cce2fb5a6fe2cf0d3d62080f2e72424beb3b53",
+    "model/cohort_summary.json": "aa8e042f25721c8dcec0751f564d1dd9979f5e791c7374ae33aec91e6547e1bb",
+    "model/deformation_associations.csv": "b0f719be9325d023e3355df56c4a519035eaa1b1aa195335dac4b216ffdc0091",
+    "model/left_only_model_summary.csv": "bb4cff92accf6eb71ebf3f26bcca7cb263b53ee1150833b49a89745c9b6a222f",
+    "model/left_only_paired_comparisons.csv": "37a38f076731d741011e75d3887b2b7a1cd0baf8b37843de312dd87a2c8f6f73",
+    "model/metrics_by_repeat.csv": "eb34a958b879e5367a8456495d6b038bc62f653c0be96586af9b34215a6f66ca",
+    "model/model_mae_inference.csv": "e92116c78772b7155c8f5376c6c3a374328b3123dd1434fdda5838e9a42a574c",
+    "model/model_summary.csv": "2c177b6ac0e18e2083cf51deb4a10295f364adfd6b1327fb6227759cca886893",
+    "model/paired_comparisons.csv": "e00dc14ead1a29c7bb5e8bc58902039aed0af1226caa66c0ee4b1e603e3cbcd7",
+    "registration/ants_mni_config.json": "b7e46458a73a02d8a025058e4af9f1961e22f3ee24771c06dfb57ec8c59f5f8d",
+    "registration/registration_flow.json": "11f40ceb0474d44db52335aaabe4a7cdaa3ff3e22e4f3d538d1dfcfc345ad07e",
+    "registration/registration_qc_histograms.json": "15b94e78fb6ad710af65175991601cf0df291546f69b2857b6074b994257a52a",
+    "registration/registration_qc_summary.csv": "a8abe55697bf3f5e881b10d4b0b91774ed92ba5495aa01f9601be01e5c2cd916",
+    "reproduction_check.json": "3776470408f10b78b85f9b9499a433e5a73e04c3de845904a959d1ab5d8a02c5"
+  }
+}

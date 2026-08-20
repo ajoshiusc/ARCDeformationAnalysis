@@ -1,8 +1,8 @@
 [paths]
-arc_root = "/home/ajoshi/project2_ajoshi_1183/data/ARC"
-mass_effect_manifest = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv"
-clinical_table = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv"
-uncertainty_manifest = "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv"
+arc_root = "/path/to/ARC"
+mass_effect_manifest = "/path/to/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv"
+clinical_table = "/path/to/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv"
+uncertainty_manifest = "/path/to/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv"
 output_root = "results/runs"
 
 [model]

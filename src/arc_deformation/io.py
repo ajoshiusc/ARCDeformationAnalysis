@@ -85,22 +85,17 @@ def sha256_file(path: Path, block_size: int = 1024 * 1024) -> str:
 
 
 def localize_arc_path(path: Path | str, arc_root: Path) -> Path:
-    """Map CARC or workstation ARC paths to the configured local ARC root."""
+    """Map an absolute manifest path below an ``ARC`` root to this installation."""
     candidate = Path(str(path))
     if candidate.is_file():
         return candidate
-    roots = (
-        Path("/project2/ajoshi_1183/data/ARC"),
-        Path("/home/ajoshi/project2_ajoshi_1183/data/ARC"),
-        Path("/deneb_disk/ARC"),
-    )
-    for known_root in roots:
-        try:
-            relative = candidate.relative_to(known_root)
-        except ValueError:
-            continue
-        localized = Path(arc_root) / relative
-        if localized.is_file():
+    parts = candidate.parts
+    arc_indices = [index for index, value in enumerate(parts) if value == "ARC"]
+    if arc_indices:
+        relative = Path(*parts[arc_indices[-1] + 1 :])
+        root = Path(arc_root).resolve()
+        localized = (root / relative).resolve()
+        if localized.is_relative_to(root) and localized.is_file():
             return localized
     raise FileNotFoundError(f"Cannot localize ARC path: {candidate}")
 

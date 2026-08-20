@@ -11,6 +11,6 @@
     "velocity_reconstruction_tolerance": 0.02
   },
   "cases": 214,
-  "input_manifest": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv",
+  "input_manifest_basename": "mass_effect_manifest.csv",
   "input_manifest_sha256": "fc812c6d668e85ebdb999f1f6c4d4418bce745d94e2090eb2898503afe905098"
 }

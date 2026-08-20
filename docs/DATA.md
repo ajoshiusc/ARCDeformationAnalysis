@@ -2,12 +2,9 @@
 
 ## Source dataset
 
-The analysis reads the Aphasia Recovery Cohort (ARC) BIDS dataset. The mounted
-copy used for the frozen run was:
-
-```text
-/home/ajoshi/project2_ajoshi_1183/data/ARC
-```
+The analysis reads a local, read-only copy of the Aphasia Recovery Cohort (ARC)
+BIDS dataset. Local mount paths are deliberately excluded from the public
+configuration; input identities are recorded by release and SHA-256 instead.
 
 The dataset identifies itself as OpenNeuro `ds004884`, version 1.0.2, DOI
 `10.18112/openneuro.ds004884.v1.0.2`, with a CC0 license. Its
@@ -27,6 +24,8 @@ the ARC root.
 | `uncertainty_manifest.csv` | unique `case_id`, soft lesion and entropy summaries | Optional sensitivity model |
 | `hodge_manifest.csv` | unique `case_id`, method/QC fields, aggregate log-velocity/Hodge descriptors | Generated secondary predictors |
 | variant `hodge_manifest.csv` files | unique `case_id`, variant setting, QC, and descriptors | Private numerical-sensitivity intermediates |
+| `stroke_inpainting/manifest.csv` | unique `case_id`; lesion-filled T1w, brain mask, lesion mask, dilated target paths | Independent ANTs registration inputs |
+| TemplateFlow `MNI152NLin2009aSym` | resolution-1 T1w image and brain mask | Fixed ANTs reference and reflection geometry |
 
 The model rejects duplicate cases, mixed deformation-method versions, multiple
 cases per participant after matching, and missing outcome values. All models in
@@ -52,6 +51,8 @@ excluded from the stored lesion-effect field.
 
 - raw BIDS images;
 - subject-level NIfTI derivatives;
+- participant-level ANTs affine matrices, forward/inverse warps, warped images,
+  and QC mosaics;
 - joined clinical/design tables;
 - primary and numerical-variant case-level Hodge manifests;
 - long-form out-of-fold predictions;
@@ -71,10 +72,14 @@ trained weights. In particular:
   in `docs/LESION_DELINEATION.md`;
 - nnU-Net and trained checkpoints are external software/data dependencies;
 - BrainSuite/SVReg is an external application;
+- ANTsPy 0.6.1 and TemplateFlow 25.1.2 are pinned optional dependencies; the
+  retrieved MNI152 reference files are identified by SHA-256 in the ANTs
+  provenance record;
 - the ARC images and participant-level derivatives remain under the ARC data
   root and are read-only.
 
 This boundary is intentional: checking participant images or multi-gigabyte
 model checkpoints into the public analysis repository would be neither portable
-nor appropriate. The exact paths, versions, hashes, and commands needed at the
-boundary are recorded instead.
+nor appropriate. Portable basenames, versions, hashes, and commands needed at
+the boundary are recorded instead; site-local paths stay in ignored
+configuration files.

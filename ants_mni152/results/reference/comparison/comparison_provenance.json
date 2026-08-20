@@ -1,0 +1,31 @@
+{
+  "bootstrap_samples": 5000,
+  "seed": 2026,
+  "inputs": {
+    "svreg_mass": {
+      "path_basename": "mass_effect_manifest.csv",
+      "sha256": "fc812c6d668e85ebdb999f1f6c4d4418bce745d94e2090eb2898503afe905098"
+    },
+    "ants_mass": {
+      "path_basename": "mass_effect_manifest.csv",
+      "sha256": "1a6fa40d0ffd1058a6eb5decf7abc9c5703d21c2d2e638218beaeb8567409ed3"
+    },
+    "svreg_hodge": {
+      "path_basename": "hodge_manifest.csv",
+      "sha256": "660f308c412785b800672f08e76989c5464528c6e1f39e2719e903673a01488a"
+    },
+    "ants_hodge": {
+      "path_basename": "hodge_manifest.csv",
+      "sha256": "a421225aef70a9148d5a6999c4b140da4fcc5e1c1310c9f4f89b3d00aa19d1f2"
+    },
+    "svreg_predictions": {
+      "path_basename": "aq_mass_effect_predictions_long.csv",
+      "sha256": "5ecb08c92511fb95f5b8c8bd6f6494d3339946822b5bbec2793bd9b7e8d7182b"
+    },
+    "ants_predictions": {
+      "path_basename": "aq_mass_effect_predictions_long.csv",
+      "sha256": "f7783feae1c7ebae528b147796a79261487db446919c1aee3260756e5c848b52"
+    }
+  },
+  "interpretation": "Atlas-registration-pipeline sensitivity comparison on common participants; registration software, reference atlas, and grid differ together; rank agreement does not establish physical validity or equivalence"
+}

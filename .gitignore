@@ -14,6 +14,7 @@ build/
 # Local configuration and protected participant-level products
 .env
 config/local.toml
+ants_mni152/config.local.toml
 data/raw/
 data/derivatives/
 results/runs/
@@ -30,6 +31,14 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
+ants_mni152/paper/*.aux
+ants_mni152/paper/*.bbl
+ants_mni152/paper/*.blg
+ants_mni152/paper/*.fdb_latexmk
+ants_mni152/paper/*.fls
+ants_mni152/paper/*.log
+ants_mni152/paper/*.out
+ants_mni152/paper/*.synctex.gz
 
 # Editors / OS
 .DS_Store

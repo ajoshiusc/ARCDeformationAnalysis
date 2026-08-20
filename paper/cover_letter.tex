@@ -22,9 +22,9 @@ Editors\\
 Dear Editors,
 
 Please consider the Research Article ``Geometric Decomposition of Chronic
-Stroke Registration Asymmetry: Numerical Robustness and Aphasia Associations
-in the Aphasia Recovery Cohort'' for publication in \emph{Imaging
-Neuroscience}.
+Stroke Registration Asymmetry: Numerical Stability, Registration-Pipeline Sensitivity, and Aphasia
+Associations in the Aphasia Recovery Cohort'' for publication in
+\emph{Imaging Neuroscience}.
 
 This study addresses a recurring interpretive problem in lesion neuroimaging:
 registration fields near chronic lesions can be scientifically useful without
@@ -35,18 +35,29 @@ bounded Helmholtz--Hodge decomposition. Every log-domain case is audited by
 exponentiating the estimated velocity and comparing the reconstruction with its
 input deformation.
 
+We additionally repeat the complete analysis using ANTs/SyN forward and inverse
+mappings with the symmetric MNI152 template. This pipeline-sensitivity
+analysis includes predefined overlap, Jacobian, and inverse-consistency checks,
+cross-algorithm descriptor agreement, and identical-split predictive
+comparisons. Participant-level transforms remain outside the public repository;
+all aggregate results and a second standalone supplement are regenerated from
+versioned code.
+
 The study's central result is a bounded methodological advance rather than an
 overstated biomarker claim. The log-domain descriptors were numerically valid
 for every primary case and highly rank-stable across eight perturbations of
 smoothing, taper, padding, and grid resolution. In 210 participants from the
 openly available Aphasia Recovery Cohort, deformation and component balance
 tracked aphasia severity descriptively, but no association survived adjustment
-for conventional clinical and lesion variables and multiplicity. Neither
-feature family established incremental nested cross-validated prediction of
-Western Aphasia Battery Aphasia Quotient. The complete nonsignificant and
-sensitivity results are reported in the Supplementary Material. This pattern
-defines both the reproducible information in the registration geometry and its
-current limit as an independent behavioral marker.
+for conventional clinical and lesion variables and multiplicity. A small
+deformation-feature advantage met the within-pipeline prediction criterion in
+the ANTs/MNI152 analysis but not in SVReg; descriptor agreement and direct
+same-split comparisons bound this as pipeline-sensitive evidence. Hodge
+features added no predictive benefit in either pipeline. The complete
+nonsignificant and sensitivity results are reported in the Supplementary
+Material. This pattern defines both the reproducible information in the
+registration geometry and its current limit as an independent behavioral
+marker.
 
 The work fits \emph{Imaging Neuroscience} because it combines open human
 neuroimaging, deformable registration, reproducible computational methodology,

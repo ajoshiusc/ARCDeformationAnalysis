@@ -295,6 +295,7 @@ def run_hodge_extraction(
     output_dir: Path,
     config: HodgeConfig | None = None,
     n_jobs: int = 1,
+    expected_method_version: str = METHOD_VERSION,
 ) -> Path:
     """Create a deterministic case-level Hodge descriptor manifest."""
     config = config or HodgeConfig()
@@ -314,8 +315,10 @@ def run_hodge_extraction(
     if missing:
         raise ValueError(f"Mass-effect manifest lacks Hodge inputs: {missing}")
     versions = sorted(frame["method_version"].dropna().astype(str).unique())
-    if versions != [METHOD_VERSION]:
-        raise ValueError(f"Hodge extraction requires {METHOD_VERSION!r}, found {versions}")
+    if versions != [expected_method_version]:
+        raise ValueError(
+            f"Hodge extraction requires {expected_method_version!r}, found {versions}"
+        )
     records = frame.sort_values(["subject", "case_id"]).to_dict("records")
     if n_jobs == 1:
         results = [extract_hodge_case(record, Path(arc_root), config) for record in records]
@@ -369,6 +372,7 @@ def run_hodge_extraction(
         output_dir / "hodge_config.json",
         {
             "method_version": HODGE_METHOD_VERSION,
+            "input_deformation_method_version": expected_method_version,
             "interpretation": (
                 "Stationary log-velocity representation of a tapered displacement "
                 "embedding followed by periodic-grid decomposition; not physical "

@@ -7,19 +7,22 @@ Generate all submission PDFs from the repository root with:
 make submission
 ```
 
-The reporting command first regenerates `paper/generated/results.tex`, model,
+The reporting commands first regenerate `paper/generated/results.tex`, model,
 paired-comparison, association, adjusted-association, and Hodge-sensitivity
 tables, plus the model-comparison, association, adjustment, and numerical
-sensitivity figures from frozen aggregate CSV/JSON files. `latexmk` then
-builds:
+sensitivity figures from frozen aggregate CSV/JSON files. The independent
+ANTs reporter separately regenerates its QC, pipeline-agreement, association, and
+prediction assets from `ants_mni152/results/reference/`, which contains no
+participant rows or paths. `latexmk` then builds:
 
 - `main.pdf`;
 - `supplement.pdf`;
+- `ants_mni152/paper/supplement_ants.pdf`;
 - `cover_letter.pdf`.
 
 The submission target also creates `submission.pdf`, an all-in-one
-first-submission file containing the main manuscript followed by the complete
-supplement. The separate supplement remains available for a revision or for
+first-submission file containing the main manuscript followed by both complete
+supplements. The separate supplements remain available for a revision or for
 Editorial Manager if requested.
 
 The main text uses author-year APA-style citations, a single-paragraph abstract,

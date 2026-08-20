@@ -64,6 +64,8 @@ def calculate_case_metrics(
     registration_sensitivity_mm: np.ndarray | None = None,
     minimum_laterality: float = 0.80,
     smoothing_mm: float = 2.0,
+    method_version: str = METHOD_VERSION,
+    minimum_near_lesion_volume_mm3: float = 1000.0,
 ) -> dict[str, object]:
     """Calculate all registered case outputs from one common valid-support mask."""
     expected_shape = lesion.shape
@@ -78,7 +80,7 @@ def calculate_case_metrics(
         "case_id": metadata.case_id,
         "subject": metadata.subject,
         "session": metadata.session,
-        "method_version": METHOD_VERSION,
+        "method_version": method_version,
         "interpretation": (
             "lesional-only deformation relative to the mirrored contralesional "
             "within-participant control"
@@ -99,9 +101,11 @@ def calculate_case_metrics(
         "contralateral_affine_fit_rmse_subject_voxels": (
             normalized.affine_fit_rmse_subject_voxels
         ),
-        # ARC's processed/inpainted source grid is 1 mm isotropic, so this is
-        # numerically identical to the explicitly named voxel-coordinate RMSE.
-        "contralateral_affine_fit_rmse_mm": normalized.affine_fit_rmse_subject_voxels,
+        "contralateral_affine_fit_rmse_mm": (
+            normalized.affine_fit_rmse_mm
+            if normalized.affine_fit_rmse_mm is not None
+            else normalized.affine_fit_rmse_subject_voxels
+        ),
         "contralateral_affine_fit_points": normalized.affine_fit_points,
         "contralateral_affine_fit_inlier_fraction": normalized.affine_fit_inlier_fraction,
         "normalized_field_folding_fraction": normalized.folding_fraction,
@@ -174,14 +178,16 @@ def calculate_case_metrics(
         if np.isfinite(signal) and np.isfinite(sensitivity) and sensitivity > 0
         else math.nan
     )
+    minimum_near_voxels = int(math.ceil(minimum_near_lesion_volume_mm3 / voxel_volume_mm3))
     metrics["deformation_qc_pass"] = bool(
         metrics["laterality_supported"]
         and normalized.folding_fraction <= 0.05
-        and near_magnitude.size >= 1000
+        and near_magnitude.size >= minimum_near_voxels
     )
     metrics["deformation_qc_criteria"] = {
         "laterality_fraction_minimum": minimum_laterality,
         "normalized_field_folding_fraction_maximum": 0.05,
-        "mass_effect_3_20mm_valid_voxels_minimum": 1000,
+        "mass_effect_3_20mm_valid_voxels_minimum": minimum_near_voxels,
+        "mass_effect_3_20mm_valid_volume_mm3_minimum": minimum_near_lesion_volume_mm3,
     }
     return metrics

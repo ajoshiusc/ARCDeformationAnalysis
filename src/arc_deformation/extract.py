@@ -64,6 +64,21 @@ def _validate_atlas(image: nib.spatialimages.SpatialImage) -> tuple[float, float
     gram = linear.T @ linear
     if not np.allclose(gram, np.diag(np.diag(gram)), atol=1e-5):
         raise ValueError("Atlas axes must be orthogonal for midline reflection")
+    orientation = nib.aff2axcodes(image.affine)
+    if orientation != ("R", "A", "S"):
+        raise ValueError(
+            "Midline reflection requires canonical RAS geometry with increasing "
+            f"first-axis world x; found {orientation}"
+        )
+    if image.shape[0] % 2 != 1:
+        raise ValueError("Midline reflection requires an odd first-axis dimension")
+    center = np.array([(image.shape[0] - 1) / 2, 0.0, 0.0])
+    center_world_x = float(nib.affines.apply_affine(image.affine, center)[0])
+    if not np.isclose(center_world_x, 0.0, atol=1e-4):
+        raise ValueError(
+            "Atlas array midpoint must coincide with world x=0 for reflection; "
+            f"found x={center_world_x:.6g} mm"
+        )
     return spacing
 
 
@@ -95,6 +110,7 @@ def _normalized_from_files(
         valid,
         lesion_side,
         spacing,
+        source_spacing_mm=source_spacing,
         smoothing_mm=smoothing_mm,
         fit_subsample=fit_subsample,
     )

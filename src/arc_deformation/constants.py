@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 METHOD_VERSION = "contralateral_control_lesional_only_v2"
+ANTS_METHOD_VERSION = "ants_mni152nlin2009asym_synquickrepro_2mm_v1"
 HODGE_METHOD_VERSION = "log_svf_tapered_periodic_fft_hhd_v1"
 SHELLS_MM = ((3.0, 5.0), (5.0, 10.0), (10.0, 20.0), (20.0, 40.0))
 

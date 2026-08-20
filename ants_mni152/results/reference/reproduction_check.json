@@ -1,0 +1,38 @@
+{
+  "cases_repeated": 1,
+  "case_identifier_retained": false,
+  "fixed_seed": 2026,
+  "itk_threads": 1,
+  "scalar_absolute_differences": {
+    "registration_brain_mask_dice": 0.0,
+    "registration_intensity_pearson_r": 0.0,
+    "registration_cycle_rmse_mm": 0.0,
+    "registration_cycle_maximum_mm": 0.0,
+    "registration_raw_warp_minimum_jacobian": 0.0,
+    "registration_raw_warp_folding_fraction": 0.0,
+    "contralateral_affine_fit_rmse_mm": 0.0,
+    "normalized_field_folding_fraction": 0.0,
+    "mass_effect_3_20mm_magnitude_mm_median": 0.0,
+    "mass_effect_3_20mm_radial_mm_median": 0.0
+  },
+  "image_maximum_absolute_differences": {
+    "mass_effect_vector_path": 0.0,
+    "mass_effect_magnitude_path": 0.0,
+    "mass_effect_radial_path": 0.0,
+    "log_jacobian_asymmetry_path": 0.0,
+    "valid_mask_path": 0.0,
+    "lesion_atlas_path": 0.0,
+    "target_atlas_path": 0.0,
+    "subject_to_mni152_path": 0.0,
+    "mni152_to_subject_path": 0.0
+  },
+  "warp_maximum_absolute_differences": {
+    "forward_warp": 0.0,
+    "inverse_warp": 0.0
+  },
+  "maximum_scalar_absolute_difference": 0.0,
+  "maximum_image_absolute_difference": 0.0,
+  "maximum_warp_absolute_difference": 0.0,
+  "exact_reproduction": true,
+  "interpretation": "Engineering determinism check for one fixed case; not evidence of cohort reliability or anatomical validity"
+}

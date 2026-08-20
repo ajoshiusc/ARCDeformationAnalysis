@@ -12,9 +12,11 @@
 
 \graphicspath{{generated/}{../results/reference/figures/}}
 \input{generated/results.tex}
+\input{../ants_mni152/paper/generated/results.tex}
 
 \title{Geometric Decomposition of Chronic Stroke Registration Asymmetry:
-Numerical Robustness and Aphasia Associations in the Aphasia Recovery Cohort}
+Numerical Stability, Registration-Pipeline Sensitivity, and Aphasia Associations in the Aphasia
+Recovery Cohort}
 \author{Anand A. Joshi\\
 Signal and Image Processing Institute\\
 Ming Hsieh Department of Electrical and Computer Engineering\\
@@ -51,12 +53,17 @@ cross-validation, a conventional lesion model achieved mean absolute error
 \DeformationMAE{} and a mean advantage of \DeformationAdvantage{} points (95\%
 participant-bootstrap interval \DeformationCILow{} to
 \DeformationCIHigh{}); adding Hodge features after lesion features produced an
-advantage of \HodgeAdvantage{} points (\HodgeCILow{} to \HodgeCIHigh{}). Thus,
-the log-domain decomposition was numerically reproducible within its specified
-boundary construction, but the observed aphasia associations were not
-independent of conventional lesion information and did not yield robust
-incremental prediction. These quantities support geometric characterization,
-not pressure estimation or physical tissue-velocity inference.
+advantage of \HodgeAdvantage{} points (\HodgeCILow{} to \HodgeCIHigh{}). An
+independent ANTs/MNI152 analysis produced a deformation-feature advantage of
+\AntsDeformationAdvantage{} points
+(\AntsDeformationCILow{} to \AntsDeformationCIHigh{}; Holm
+$p=\AntsDeformationP$), but cross-pipeline rank agreement for median
+near-lesion magnitude was only $\rho=\AntsMagnitudeAgreement$ and the direct
+ANTs--SVReg MAE contrast was inconclusive. Thus, the log-domain decomposition
+was numerically reproducible within its specified construction, whereas the
+descriptors and predictive inference were registration-pipeline dependent.
+These quantities support geometric characterization, not pressure estimation,
+physical tissue-velocity inference, or an established aphasia biomarker.
 \end{abstract}
 
 \noindent\textbf{Keywords:} aphasia; chronic stroke; deformable registration;
@@ -243,6 +250,47 @@ was recorded as registration sensitivity, not biological deformation. A
 sensitivity model added median registration sensitivity and contralateral
 affine-fit RMSE.
 
+\subsection{Independent ANTs/MNI152 pipeline sensitivity}
+
+To test dependence on the atlas-registration pipeline, the complete analysis
+was repeated with ANTs while holding the lesion-filled anatomical images,
+lesion and exclusion masks, clinical table,
+feature definitions, and statistical plan fixed. The 1-mm
+MNI152NLin2009aSym T1-weighted template and brain mask were retrieved from
+TemplateFlow \citep{Fonov2009,Ciric2022}. Code required canonical RAS
+orientation, orthogonal axes, an odd left--right dimension, a central voxel at
+world $x=0$, and reflection-symmetric brain-mask geometry.
+
+One registration per case supplied forward and inverse mappings on a 2-mm
+isotropic grid using ANTsPy
+0.6.1 and reproducible rigid, affine, and SyN stages
+\citep{Avants2008,Avants2011}. Fixed and moving brain masks constrained all
+stages. Every case used the
+\texttt{antsRegistration}\allowbreak\texttt{SyNQuickRepro[s]} preset, random seed 2026,
+single-precision arithmetic, and one ITK thread. The ANTs forward point
+transform list mapped fixed MNI152 points to moving subject points and thus
+formed the inverse coordinate map used by Equation~\ref{eq:residual}; the
+inverse list provided moving-to-fixed points for round-trip QC. Eligibility
+required brain-mask Dice $\geq0.70$, fixed--moving--fixed point RMSE
+$\leq0.50$ mm, and raw SyN nonpositive-Jacobian fraction $\leq0.001$, in
+addition to the primary deformation criteria.
+
+The 1,000-voxel near-lesion support threshold at 1-mm resolution was expressed
+as 1,000 mm$^3$ (125 voxels) on the ANTs grid, and affine-fit error was converted
+from source voxels to millimetres. A 2-voxel Hodge stride preserved the primary
+4-mm physical analysis grid; all other physical regularization and log-domain
+criteria were unchanged. Because ANTs/MNI152 and SVReg differed in registration
+software, reference atlas, and grid resolution, this comparison estimated
+whole-pipeline sensitivity rather than an isolated software effect.
+ANTs--SVReg descriptor agreement used Spearman rank
+correlation with participant-bootstrap intervals. When the retained cohort was
+identical, algorithm-specific predictive models were compared on the same
+outer-CV splits. Full methods, QC distributions, associations, nonsignificant
+results, and direct algorithm comparisons are reported in Supplementary
+Material~2. The two SVReg direct-versus-inpainted sensitivity correlations had
+no ANTs counterpart and were not encoded as zero; Holm correction therefore
+covered the ten measured ANTs descriptive associations.
+
 \subsection{Prediction models}
 
 The intercept-only benchmark predicted the training-fold mean. The clinical
@@ -388,6 +436,25 @@ values are reported in Table~S5.}
 \label{fig:hodge-sensitivity}
 \end{figure}
 
+\subsection{Independent registration-pipeline sensitivity}
+
+All \AntsManifestN{} cases were independently registered with ANTs;
+\AntsRegistrationPassN{} passed registration QC and
+\AntsDeformationPassN{} passed the combined registration/deformation criteria.
+Median brain-mask Dice was \AntsBrainDiceMedian{}, and median point round-trip
+RMSE was \AntsCycleMedian{} mm (maximum \AntsCycleMaximum{} mm). All
+\AntsHodgePassN{} ANTs-derived regularized embeddings passed log-domain QC.
+
+ANTs--SVReg descriptor rank agreement was
+$\rho=\AntsMagnitudeAgreement$ for median 3--20-mm displacement magnitude,
+$\rho=\AntsTotalRMSAgreement$ for stationary-log RMS,
+$\rho=\AntsCurlFreeAgreement$ for curl-free energy fraction, and
+$\rho=\AntsDivergenceFreeAgreement$ for divergence-free energy fraction.
+Complete agreement estimates and bootstrap intervals are reported in
+Supplementary Table~A2 and Figure~A2. These comparisons quantify algorithmic
+sensitivity of the atlas-registration pipelines; they neither isolate a single
+software factor nor validate either field as physical displacement.
+
 \subsection{Descriptive associations with WAB-AQ}
 
 Lesion volume had the largest descriptive association with WAB-AQ
@@ -475,6 +542,19 @@ cohort ($n=\LeftOnlyN$), the primary deformation advantage was
 \LeftOnlyDeformationCIHigh{}). Both intervals included zero, as did every
 incremental Hodge comparison in the left-dominant-only analysis (Table~S6).
 
+Using ANTs-derived features, the deformation-augmented model had a mean MAE
+advantage of \AntsDeformationAdvantage{} points over the conventional lesion
+model (95\% interval \AntsDeformationCILow{} to
+\AntsDeformationCIHigh{}; Holm $p=\AntsDeformationP$), satisfying the
+prespecified within-pipeline superiority criterion. The Hodge-augmented model had an advantage of
+\AntsHodgeAdvantage{} points (\AntsHodgeCILow{} to \AntsHodgeCIHigh{}).
+On shared cases and outer splits, ANTs-minus-SVReg MAE was
+\AntsVsSvregDeformationDifference{} points for the deformation-augmented model
+(\AntsVsSvregDeformationCILow{} to \AntsVsSvregDeformationCIHigh{}); this
+direct interval included zero. The
+complete ANTs model family and nonsignificant comparisons are retained in
+Supplementary Tables~A5--A7.
+
 \section{Discussion}
 
 This study separates three levels of inference that are often conflated when
@@ -484,10 +564,22 @@ projection produced auditable descriptors with high rank stability across the
 tested parameter range. At the behavioral-association level, displacement
 magnitude and component balance covaried with aphasia severity, but those
 associations weakened after conventional clinical and lesion information was
-removed. At the predictive level, neither displacement nor Hodge features
-established incremental held-out benefit. The defensible contribution is
-therefore a reproducible geometric characterization and a clearly bounded
-negative predictive result, not a new mechanical biomarker.
+removed. At the predictive level, displacement features met the within-pipeline
+criterion only in the ANTs/MNI152 analysis; Hodge features did not establish
+incremental benefit in either pipeline. The defensible contribution is
+therefore a reproducible geometric characterization and a bounded,
+pipeline-sensitive predictive result, not a new mechanical biomarker.
+
+The independent ANTs analysis adds a fourth level: atlas-registration-pipeline
+sensitivity. Lesion delineation, inpainting inputs, conventional predictors,
+and statistical analysis were held fixed, whereas registration software,
+reference atlas, and working resolution changed together. The comparison
+therefore cannot attribute differences to ANTs alone. Agreement varied widely
+by descriptor: signed radial and integral summaries retained appreciable rank
+ordering, but median magnitude and log-velocity/Hodge summaries showed weak
+agreement. Crucially, neither agreement nor a diffeomorphic SyN construction
+establishes that the inferred field is the historical tissue motion caused by
+stroke.
 
 The log-domain step implements the group-theoretic idea underlying
 diffeomorphic flow models: a velocity field is exponentiated to produce a
@@ -524,6 +616,15 @@ direct-versus-inpainted registration sensitivity. These results place an
 empirical limit on claims that registration-derived geometry supplies
 independent severity information in this cohort.
 
+The ANTs/MNI152 deformation model did satisfy the same within-pipeline
+criterion, with a small 0.81-point advantage whose lower bootstrap bound was
+close to zero. This was not a clean replication: the SVReg interval included
+zero, median-magnitude ranks agreed weakly across pipelines, and the direct
+ANTs--SVReg prediction contrast was inconclusive. The combined evidence
+therefore supports sensitivity of deformation-based prediction to the complete
+atlas-registration construction, not a pipeline-invariant biomarker or a
+demonstrated performance difference between registration packages.
+
 No result estimates intracranial or tissue pressure. Pressure has units of force
 per area, whereas the stationary field here has displacement units over an
 arbitrary unit interval. A pressure inversion would require, at minimum, a
@@ -545,7 +646,11 @@ no independent external cohort was available. WAB-AQ is a composite severity
 measure, and the current results do not generalize to individual language
 tasks, aphasia subtype, recovery, or treatment response. Repeated nested
 cross-validation reduces split dependence but does not replace external
-validation.
+validation. Although the conventional model includes bilateral language-network
+lesion burden, the frozen clinical table does not contain parcel-wise or
+voxelwise lesion-location features. Introducing a new atlas or a
+registration-dependent lesion PCA after inspecting the present results would
+change the estimand and was not pursued post hoc.
 
 Future work could examine longitudinal displacement from acute to chronic
 imaging, compare alternative Hodge boundary conditions, and preregister
@@ -559,11 +664,13 @@ Contralateral normalization and a numerically validated stationary logarithm
 provided stable, transparent geometric descriptions of chronic stroke
 registration asymmetry. In ARC, displacement and Hodge descriptors tracked
 aphasia severity in unadjusted analyses, but no adjusted association survived
-multiplicity correction and neither feature family established incremental
-WAB-AQ prediction beyond conventional lesion features. The method is therefore
-useful as an auditable description of registration geometry, while the present
-evidence does not support pressure estimation, physical tissue-velocity
-inference, causal mass effect, or an independent aphasia biomarker.
+multiplicity correction. A small deformation-feature prediction advantage was
+present in the ANTs/MNI152 analysis but not established with SVReg, and Hodge
+features added no predictive benefit in either pipeline. The method is useful
+as an auditable description of registration geometry, while the present
+pipeline-sensitive evidence does not support pressure estimation, physical
+tissue-velocity inference, causal mass effect, or an established independent
+aphasia biomarker.
 
 \section*{Data and Code Availability}
 

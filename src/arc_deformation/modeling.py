@@ -96,17 +96,26 @@ def build_design(
     missing = [column for column in qc_columns if column not in design]
     if missing:
         raise ValueError(f"Mass-effect QC fields are missing: {missing}")
+    registration_qc_available = "me_registration_qc_pass" in design
+    registration_qc_pass_rows = (
+        int(truthy(design["me_registration_qc_pass"]).sum())
+        if registration_qc_available
+        else None
+    )
     if config.require_deformation_qc:
         supported = truthy(design["me_laterality_supported"])
         folding = pd.to_numeric(design["me_normalized_field_folding_fraction"], errors="coerce")
         valid_voxels = pd.to_numeric(
             design["me_mass_effect_3_20mm_magnitude_mm_n_voxels"], errors="coerce"
         )
-        design = design.loc[
+        qc = (
             supported
             & folding.le(config.maximum_folding_fraction)
             & valid_voxels.ge(config.minimum_near_lesion_voxels)
-        ].copy()
+        )
+        if "me_registration_qc_pass" in design:
+            qc &= truthy(design["me_registration_qc_pass"])
+        design = design.loc[qc].copy()
     qc_rows = len(design)
 
     uncertainty_used = False
@@ -170,6 +179,8 @@ def build_design(
         "mass_effect_method_versions": versions,
         "mass_effect_clinical_matches": matched_rows,
         "rows_after_deformation_qc": qc_rows,
+        "registration_qc_available": registration_qc_available,
+        "registration_qc_pass_rows_before_combined_qc": registration_qc_pass_rows,
         "uncertainty_coverage_before_matching": uncertainty_coverage,
         "uncertainty_models_used": uncertainty_used,
         "hodge_coverage_before_matching": hodge_coverage,
@@ -535,6 +546,14 @@ def deformation_associations(
                 outcome,
             ),
         )
+    specifications = tuple(
+        specification
+        for specification in specifications
+        if all(
+            column in design and pd.to_numeric(design[column], errors="coerce").notna().any()
+            for column in specification[1:]
+        )
+    )
     rng = np.random.default_rng(seed)
     rows: list[dict[str, object]] = []
     for name, first, second in specifications:
@@ -718,13 +737,20 @@ def aggregate_cohort_summary(
             "me_mass_effect_3_20mm_mean_absolute_radial_mm", 2
         ),
         "folding_percent": folding,
-        "registration_sensitivity_median_mm": quantiles(
-            "me_registration_sensitivity_3_20mm_mm_median", 2
+    }
+    optional_descriptives = {
+        "registration_sensitivity_median_mm": (
+            "me_registration_sensitivity_3_20mm_mm_median",
+            2,
         ),
-        "signal_sensitivity_ratio": quantiles(
-            "me_mass_effect_to_registration_sensitivity_ratio", 2
+        "signal_sensitivity_ratio": (
+            "me_mass_effect_to_registration_sensitivity_ratio",
+            2,
         ),
     }
+    for key, (column, digits) in optional_descriptives.items():
+        if column in design and pd.to_numeric(design[column], errors="coerce").notna().any():
+            summary[key] = quantiles(column, digits)
     if "wab_type" in design:
         wab_type = design["wab_type"].replace(r"^\s*$", np.nan, regex=True)
         counts = wab_type.dropna().astype(str).value_counts()

@@ -174,13 +174,13 @@
     ]
   },
   "inputs": {
-    "mass_effect_manifest": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv",
+    "mass_effect_manifest_basename": "mass_effect_manifest.csv",
     "mass_effect_manifest_sha256": "fc812c6d668e85ebdb999f1f6c4d4418bce745d94e2090eb2898503afe905098",
-    "clinical_table": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv",
+    "clinical_table_basename": "case_metrics.csv",
     "clinical_table_sha256": "521f37aab0a6da1b4a284a77abb720a0eda4e40ecb1deaff23ebcbeb236c2ca5",
-    "uncertainty_manifest": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv",
+    "uncertainty_manifest_basename": "uncertainty_manifest.csv",
     "uncertainty_manifest_sha256": "937e735b1e9da51e3b39b89946e028420f95d17e312c3713856cf30694916aba",
-    "hodge_manifest": "/tmp/arc-hodge-final-20260819/hodge_manifest.csv",
+    "hodge_manifest_basename": "hodge_manifest.csv",
     "hodge_manifest_sha256": "660f308c412785b800672f08e76989c5464528c6e1f39e2719e903673a01488a"
   },
   "primary_estimand": "participant mean absolute-error advantage: lesion_standard minus lesion_plus_mass_effect, averaged across repeats",

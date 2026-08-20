@@ -10,7 +10,7 @@ import pytest
 from arc_deformation.audit import validate_manifest
 from arc_deformation.constants import METHOD_VERSION
 from arc_deformation.extract import collect_metrics
-from arc_deformation.io import atomic_json, ensure_output_outside_data
+from arc_deformation.io import atomic_json, ensure_output_outside_data, localize_arc_path
 
 
 def test_output_inside_data_root_is_rejected(tmp_path: Path) -> None:
@@ -54,6 +54,15 @@ def test_atomic_json_writes_strict_json(tmp_path: Path) -> None:
         "finite": 1.5,
         "missing": None,
     }
+
+
+def test_arc_path_localization_is_machine_independent(tmp_path: Path) -> None:
+    arc_root = tmp_path / "ARC"
+    local_file = arc_root / "derivatives" / "example.nii.gz"
+    local_file.parent.mkdir(parents=True)
+    local_file.touch()
+    relocated = "/different/system/data/ARC/derivatives/example.nii.gz"
+    assert localize_arc_path(relocated, arc_root) == local_file.resolve()
 
 
 def test_collect_metrics_is_sorted_and_rejects_duplicates(tmp_path: Path) -> None:

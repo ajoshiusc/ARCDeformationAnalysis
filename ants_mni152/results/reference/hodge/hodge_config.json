@@ -1,0 +1,17 @@
+{
+  "method_version": "log_svf_tapered_periodic_fft_hhd_v1",
+  "input_deformation_method_version": "ants_mni152nlin2009asym_synquickrepro_2mm_v1",
+  "interpretation": "Stationary log-velocity representation of a tapered displacement embedding followed by periodic-grid decomposition; not physical velocity, pressure, force, or tissue mechanics",
+  "config": {
+    "stride": 2,
+    "padding": 6,
+    "boundary_taper_width_voxels": 4.0,
+    "displacement_smoothing_sigma_voxels": 2.5,
+    "velocity_squaring_steps": 6,
+    "velocity_maximum_iterations": 6,
+    "velocity_reconstruction_tolerance": 0.02
+  },
+  "cases": 214,
+  "input_manifest_basename": "mass_effect_manifest.csv",
+  "input_manifest_sha256": "1a6fa40d0ffd1058a6eb5decf7abc9c5703d21c2d2e638218beaeb8567409ed3"
+}

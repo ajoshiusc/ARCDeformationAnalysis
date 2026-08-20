@@ -1,0 +1,263 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
+\graphicspath{{generated/}}
+\input{generated/results.tex}
+
+\title{Supplementary Material 2: Independent ANTs/MNI152 Registration-Pipeline Analysis in
+Symmetric MNI152 Space}
+\author{Anand A. Joshi}
+\date{}
+
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+
+\begin{document}
+\maketitle
+
+\section{Purpose and scope}
+
+This analysis tests whether the study's geometric and behavioral conclusions
+depend on the atlas-registration pipeline. It repeats deformation
+extraction, stationary-log/Helmholtz--Hodge analysis, descriptive and adjusted
+associations, and leakage-resistant nested cross-validation after independently
+registering the same lesion-filled anatomical images with ANTs. The input
+anatomy, lesion masks, inpainting targets, clinical table, outcomes, feature
+definitions, and statistical plan were held constant; registration software,
+reference atlas, and working resolution changed together. This is therefore a
+whole-pipeline sensitivity analysis, not an isolated ANTs-versus-SVReg software
+experiment. Agreement does not establish physical validity; disagreement
+identifies pipeline dependence.
+
+\section{ANTs registration to and from MNI152}
+
+The fixed reference was the 1-mm symmetric ICBM 152 nonlinear 2009a template
+(MNI152NLin2009aSym) and brain mask retrieved programmatically from TemplateFlow
+\citep{Fonov2009,Ciric2022}. Code verified canonical RAS orientation,
+orthogonal axes, an odd first dimension, a central voxel at world $x=0$, and
+exact reflection symmetry of the brain mask. These checks are necessary because
+an array reversal is not a valid contralateral reflection in every nominal MNI
+geometry.
+
+Each lesion-filled, brain-extracted T1-weighted image was resampled to 2-mm
+isotropic resolution and registered to the fixed reference with ANTsPy 0.6.1
+using rigid, affine, and symmetric normalization (SyN) stages
+\citep{Avants2008,Avants2011}. Fixed and moving brain masks constrained all
+stages. The reproducible quick preset
+\texttt{antsRegistrationSyNQuickRepro[s]} used cross-correlation for the SyN
+stage, random seed 2026, single-precision arithmetic, and one ITK thread per
+case. Process-level parallelism did not change within-case threading or seed.
+The single SyN fit supplied forward and inverse mappings. Subject-to-MNI image
+resampling and MNI-to-subject image resampling were both saved outside the
+repository, together with the affine, forward warp, and inverse warp.
+
+The quick reproducible schedule was selected after an engineering benchmark on
+one case. Relative to the full reproducible schedule, elapsed time decreased
+from 348.3 to 87.8 seconds, brain-mask Dice changed from 0.9012 to 0.9008, and
+intensity correlation changed from 0.5643 to 0.5493. This computational
+benchmark motivated a feasible complete-cohort rerun and is not cohort-level
+biological evidence.
+
+ANTs applies transformations to images by pull resampling, whereas its point
+interface uses the forward list to map fixed points to moving points. We
+therefore transformed every fixed-brain voxel center through the forward list
+to construct the fixed-to-moving inverse coordinate map required by the main
+analysis. A deterministic sample of approximately 2,000 points was then mapped
+back with the inverse list. Registration QC required fixed--warped-moving brain
+Dice $\geq0.70$, round-trip RMSE $\leq0.50$ mm, and a nonpositive-Jacobian
+fraction $\leq0.001$ in the raw SyN warp.
+
+\section{Deformation and log-domain analysis}
+
+The fixed-to-moving coordinate map was analyzed with the same
+contralesional-affine removal, mirrored homolog subtraction, exclusion masks,
+2-mm physical smoothing, 3--20-mm shell, and laterality criterion as the main
+analysis. The 1,000-voxel support criterion of the 1-mm analysis was expressed
+as its resolution-invariant physical equivalent of 1,000 mm$^3$, or 125 voxels
+on the 2-mm grid. Affine-fit residuals were converted from 2-mm source voxels
+to millimetres before reporting.
+
+Stationary-log and Helmholtz--Hodge settings preserved the physical construction
+of the main analysis: a 2-voxel stride produced a 4-mm analysis grid; taper,
+smoothing, padding, exponentiation, and reconstruction criteria were unchanged.
+The representation remains an arbitrary-unit stationary registration parameter,
+not measured tissue velocity. No pressure, force, or tissue-mechanics parameter
+was estimated.
+
+The same clinical and conventional lesion predictors, uncertainty features,
+ridge-penalty grid, 20 repeated nested five-fold splits, bootstrap sample count,
+association families, multiplicity corrections, and left-lesion-only analysis
+were regenerated. Because the retained participants and deterministic ordering
+matched the SVReg analysis, the common predictive models used identical outer
+splits. ANTs--SVReg descriptor agreement used Spearman correlation with
+participant-bootstrap 95\% intervals. Direct algorithmic prediction comparisons
+used participant mean absolute error averaged over repeats; positive
+ANTs-minus-SVReg values favor SVReg.
+
+ANTs registration did not include the direct non-inpainted SVReg rerun. The two
+descriptive correlations involving that SVReg-only sensitivity quantity were
+therefore omitted rather than represented by artificial zeros; Holm correction
+covered the ten measured ANTs descriptive associations. The six adjusted
+associations were unchanged in definition.
+
+\section{Registration and field quality control}
+
+The ANTs manifest contained \AntsManifestN{} cases.
+\AntsRegistrationPassN{} passed registration QC and \AntsDeformationPassN{}
+passed the combined registration/deformation criteria. Median brain-mask Dice
+was \AntsBrainDiceMedian{}. Median round-trip RMSE was \AntsCycleMedian{} mm
+(maximum \AntsCycleMaximum{} mm), and the maximum raw-warp nonpositive-Jacobian
+fraction was \AntsRawFoldingMaximum{}. All \AntsHodgePassN{} extracted
+stationary-log embeddings passed log-domain QC. Complete distributions are in
+Table~\ref{tab:ants-qc} and Figure~\ref{fig:ants-qc}.
+
+\begin{table}[ht]
+\centering
+\caption{Complete ANTs registration and deformation quality-control summaries.}
+\label{tab:ants-qc}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/registration_qc_table.tex}}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{registration_qc.pdf}
+\caption{\textbf{ANTs registration quality control.} Dashed lines show the
+predefined eligibility boundaries. The Jacobian boundary is zero.}
+\label{fig:ants-qc}
+\end{figure}
+
+\section{Cross-algorithm descriptor agreement}
+
+Spearman rank agreement between ANTs and SVReg was
+$\rho=\AntsMagnitudeAgreement$ for median near-lesion displacement magnitude,
+$\rho=\AntsTotalRMSAgreement$ for stationary-log RMS,
+$\rho=\AntsCurlFreeAgreement$ for curl-free energy fraction, and
+$\rho=\AntsDivergenceFreeAgreement$ for divergence-free energy fraction.
+Table~\ref{tab:ants-agreement} reports all displacement and Hodge descriptors,
+including bootstrap intervals. Rank agreement quantifies pipeline sensitivity;
+it is not an equivalence test.
+
+\begin{table}[ht]
+\centering
+\caption{ANTs--SVReg descriptor rank agreement on common QC-passing cases.}
+\label{tab:ants-agreement}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/descriptor_agreement_table.tex}}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{descriptor_agreement.pdf}
+\caption{\textbf{ANTs--SVReg rank agreement.} Points are Spearman
+correlations; bars are participant-bootstrap 95\% intervals.}
+\label{fig:ants-agreement}
+\end{figure}
+
+\section{Complete ANTs associations, including nonsignificant results}
+
+Table~\ref{tab:ants-associations} reports the complete prespecified unadjusted
+association family. Table~\ref{tab:ants-adjusted} reports all adjusted
+associations after rank residualization on the conventional clinical and lesion
+variables. The adjusted magnitude association was partial
+$\rho=\AntsAdjustedMagnitudeRho$ (Holm $p=\AntsAdjustedMagnitudeP$), the
+curl-free association was $\rho=\AntsAdjustedCurlFreeRho$ (Holm
+$p=\AntsAdjustedCurlFreeP$), and the divergence-free association was
+$\rho=\AntsAdjustedDivergenceFreeRho$ (Holm
+$p=\AntsAdjustedDivergenceFreeP$).
+
+\begin{table}[ht]
+\centering
+\caption{Complete ANTs descriptive Spearman association family.}
+\label{tab:ants-associations}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/association_table.tex}}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Complete ANTs conventional-feature-adjusted association family.}
+\label{tab:ants-adjusted}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/adjusted_association_table.tex}}
+\end{table}
+
+\section{Complete predictive results and direct algorithm comparison}
+
+The ANTs analysis cohort contained \AntsAnalysisN{} participants. Adding ANTs
+deformation features to the conventional lesion model produced a mean MAE
+advantage of \AntsDeformationAdvantage{} points (95\% interval
+\AntsDeformationCILow{} to \AntsDeformationCIHigh{}; Holm
+$p=\AntsDeformationP$). Adding ANTs Hodge features produced an advantage of
+\AntsHodgeAdvantage{} points (\AntsHodgeCILow{} to \AntsHodgeCIHigh{}; Holm
+$p=\AntsHodgeP$). Tables~\ref{tab:ants-models} and
+\ref{tab:ants-paired} retain every evaluated model and comparison, including
+nonsignificant findings.
+
+\begin{table}[ht]
+\centering
+\caption{Complete repeated nested-CV results using ANTs-derived features.}
+\label{tab:ants-models}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/model_table.tex}}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Complete paired MAE comparisons using ANTs-derived features.}
+\label{tab:ants-paired}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/paired_comparison_table.tex}}
+\end{table}
+
+On identical participants and splits, ANTs-minus-SVReg mean MAE was
+\AntsVsSvregDeformationDifference{} points for the deformation-augmented model
+(95\% interval \AntsVsSvregDeformationCILow{} to
+\AntsVsSvregDeformationCIHigh{}), \AntsVsSvregHodgeDifference{} for the
+Hodge-augmented model (\AntsVsSvregHodgeCILow{} to
+\AntsVsSvregHodgeCIHigh{}), and \AntsVsSvregCombinedDifference{} for the
+combined model (\AntsVsSvregCombinedCILow{} to
+\AntsVsSvregCombinedCIHigh{}). Table~\ref{tab:ants-predictive-method}
+reports all common models; the shared conventional model is included as a
+zero-difference implementation check.
+
+\begin{table}[ht]
+\centering
+\caption{Direct ANTs--SVReg prediction comparison on shared outer-CV splits.
+Positive $\Delta$MAE indicates larger error with ANTs.}
+\label{tab:ants-predictive-method}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/predictive_method_table.tex}}
+\end{table}
+
+\section{Interpretation and limitations}
+
+This sensitivity analysis changes the nonlinear registration implementation,
+reference atlas, and working resolution, but not lesion delineation,
+inpainting, behavioral measurements, or conventional lesion predictors. It
+therefore addresses whole-pipeline dependence, not an isolated software effect
+or all sources of measurement uncertainty. Agreement may remain inflated by
+shared input preprocessing, while disagreement can arise from reference
+anatomy, optimizer, similarity metric, regularization, or resolution. The
+2-mm registration grid and reproducible quick schedule prioritize a feasible,
+fully regenerated cohort analysis; they do not reproduce the precise scale of
+SVReg optimization. Finally, neither a diffeomorphic ANTs warp nor a stable
+Hodge component supplies the constitutive parameters and boundary conditions
+required for pressure inference.
+
+The within-ANTs deformation comparison met its prespecified criterion, but its
+lower bootstrap bound was close to zero, the corresponding SVReg comparison
+was inconclusive, and the direct same-split ANTs--SVReg MAE interval included
+zero. The appropriate interpretation is pipeline-sensitive evidence rather
+than a replicated deformation biomarker or a demonstrated advantage of one
+registration package.
+
+\bibliographystyle{apalike}
+\bibliography{../../paper/references}
+
+\end{document}

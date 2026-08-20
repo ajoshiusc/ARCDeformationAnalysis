@@ -20,6 +20,7 @@ class NormalizedField:
     affine_fit_inlier_fraction: float
     jacobian: np.ndarray
     folding_fraction: float
+    affine_fit_rmse_mm: float | None = None
 
 
 def sample_image(data: np.ndarray, coordinate_map: np.ndarray, order: int) -> np.ndarray:
@@ -203,11 +204,19 @@ def normalize_coordinate_map(
     valid: np.ndarray,
     lesion_side: str,
     atlas_spacing_mm: tuple[float, float, float],
+    source_spacing_mm: tuple[float, float, float] = (1.0, 1.0, 1.0),
     smoothing_mm: float = 2.0,
     fit_subsample: int = 8,
     minimum_fit_points: int = 10_000,
 ) -> NormalizedField:
     """Remove a contralaterally fit global affine from an inverse coordinate map."""
+    if not np.allclose(source_spacing_mm, source_spacing_mm[0], atol=1e-4, rtol=1e-4):
+        raise ValueError(
+            "Physical affine-fit RMSE currently requires an isotropic source grid; "
+            f"found {source_spacing_mm}"
+        )
+    if any(not np.isfinite(value) or value <= 0 for value in source_spacing_mm):
+        raise ValueError(f"Invalid source spacing: {source_spacing_mm}")
     fit_mask = valid & contralateral_mask(valid.shape, lesion_side)
     coefficients, rmse, fit_points, inlier_fraction = fit_robust_affine(
         coordinate_map, fit_mask, fit_subsample, minimum_fit_points
@@ -235,6 +244,7 @@ def normalize_coordinate_map(
         affine_fit_inlier_fraction=inlier_fraction,
         jacobian=jacobian,
         folding_fraction=folding_fraction,
+        affine_fit_rmse_mm=rmse * float(source_spacing_mm[0]),
     )
 
 
