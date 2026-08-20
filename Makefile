@@ -2,7 +2,7 @@ PYTHON ?= python
 CONFIG ?= config/local.toml
 REFERENCE := results/reference
 
-.PHONY: install test lint audit reproduce report paper submission clean-paper
+.PHONY: install test lint audit hodge-sensitivity reproduce report paper submission clean-paper
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
@@ -15,6 +15,10 @@ lint:
 
 audit:
 	PYTHONPATH=src $(PYTHON) -m arc_deformation audit --config $(CONFIG)
+
+hodge-sensitivity:
+	PYTHONPATH=src $(PYTHON) -m arc_deformation hodge-sensitivity --config $(CONFIG) \
+		--primary-hodge-manifest results/runs/hodge/hodge_manifest.csv
 
 reproduce:
 	PYTHONPATH=src $(PYTHON) -m arc_deformation reproduce --config $(CONFIG)
@@ -30,8 +34,10 @@ paper: report
 submission: paper
 	latexmk -pdf -interaction=nonstopmode -halt-on-error -cd paper/supplement.tex
 	latexmk -pdf -interaction=nonstopmode -halt-on-error -cd paper/cover_letter.tex
+	pdfunite paper/main.pdf paper/supplement.pdf paper/submission.pdf
 
 clean-paper:
 	latexmk -C -cd paper/main.tex
 	latexmk -C -cd paper/supplement.tex
 	latexmk -C -cd paper/cover_letter.tex
+	$(RM) paper/submission.pdf

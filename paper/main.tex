@@ -13,9 +13,8 @@
 \graphicspath{{generated/}{../results/reference/figures/}}
 \input{generated/results.tex}
 
-\title{Contralateral-Normalized Deformation and Stationary Log-Velocity
-Decomposition after Chronic Stroke: Geometric Characterization and Aphasia
-Prediction in the Aphasia Recovery Cohort}
+\title{Geometric Decomposition of Chronic Stroke Registration Asymmetry:
+Numerical Robustness and Aphasia Associations in the Aphasia Recovery Cohort}
 \author{Anand A. Joshi\\
 Signal and Image Processing Institute\\
 Ming Hsieh Department of Electrical and Computer Engineering\\
@@ -28,35 +27,36 @@ University of Southern California, Los Angeles, California, USA\\
 \linenumbers
 
 \begin{abstract}
-Nonlinear registration around a chronic stroke lesion reflects anatomical
-remodeling, premorbid asymmetry, and registration error rather than a uniquely
-identifiable physical displacement. We constructed a contralateral-normalized,
-lesional-only deformation proxy in the Aphasia Recovery Cohort and asked
-whether deformation or its stationary log-velocity Helmholtz--Hodge
-decomposition improves held-out prediction of Western Aphasia Battery Aphasia
-Quotient (WAB-AQ). After removing an affine transform fitted in the
-contralesional hemisphere, residual displacement was differenced from its
-mirrored homolog and summarized 3--20~mm outside the lesion. A smooth,
-positive-Jacobian embedding was mapped to an approximate stationary
-log-velocity; exponentiation error was audited before periodic-grid
-Helmholtz--Hodge decomposition. Ridge models were assessed with 20 repetitions
-of nested five-fold cross-validation. Of \ManifestN{} deformation cases,
-\AnalysisN{} participants passed matching and quality control. All
-\HodgeQCPassN{} log-velocity embeddings passed numerical quality control.
-The conventional lesion model achieved mean absolute error (MAE)
-\StandardMAE{} WAB-AQ points. Adding deformation yielded MAE
+Nonlinear registration fields near chronic stroke lesions contain anatomical
+remodeling, premorbid asymmetry, and registration error and therefore cannot be
+read directly as physical tissue displacement. We developed an auditable
+geometric analysis of this mixed signal in the Aphasia Recovery Cohort. After
+removing an affine transform fitted in the contralesional hemisphere, residual
+displacement was differenced from its mirrored homolog. A smooth,
+positive-Jacobian embedding of the lesional-only field was mapped to an
+approximate stationary log-velocity, reconstructed by exponentiation, and
+separated into curl-free and divergence-free components by a tapered periodic
+Helmholtz--Hodge decomposition. Of \ManifestN{} deformation cases,
+\AnalysisN{} participants passed clinical matching and deformation quality
+control; all \HodgeQCPassN{} primary log-domain embeddings passed numerical
+quality control. Descriptor ranks were highly stable across eight one-factor
+perturbations of smoothing, taper, padding, and grid resolution (minimum
+Spearman $\rho=\SensitivityTotalStabilityMinimum$). Curl-free energy fraction
+was associated with lower Western Aphasia Battery Aphasia Quotient (WAB-AQ) in
+unadjusted analysis ($\rho=\HodgeCurlAQRho$, Holm $p=\HodgeCurlAQP$), but no
+deformation or Hodge association survived adjustment for clinical and lesion
+variables and multiplicity. In 20 repetitions of nested five-fold
+cross-validation, a conventional lesion model achieved mean absolute error
+(MAE) \StandardMAE{} WAB-AQ points. Adding displacement features produced MAE
 \DeformationMAE{} and a mean advantage of \DeformationAdvantage{} points (95\%
-participant-bootstrap interval \DeformationCILow{} to \DeformationCIHigh{}).
-Adding Hodge features after lesion features yielded an advantage of
-\HodgeAdvantage{} points (\HodgeCILow{} to \HodgeCIHigh{}), and after
-deformation features \HodgeAfterDeformationAdvantage{} points
-(\HodgeAfterDeformationCILow{} to \HodgeAfterDeformationCIHigh{}). Although a
-larger curl-free energy fraction was descriptively associated with lower AQ
-(Spearman $\rho=\HodgeCurlAQRho$, Holm $p=\HodgeCurlAQP$), Hodge features did
-not improve prediction. Registration-derived displacement and log-velocity
-provide auditable geometric descriptors, but neither supports pressure
-estimation, and neither deformation feature family established robust
-incremental aphasia prediction.
+participant-bootstrap interval \DeformationCILow{} to
+\DeformationCIHigh{}); adding Hodge features after lesion features produced an
+advantage of \HodgeAdvantage{} points (\HodgeCILow{} to \HodgeCIHigh{}). Thus,
+the log-domain decomposition was numerically reproducible within its specified
+boundary construction, but the observed aphasia associations were not
+independent of conventional lesion information and did not yield robust
+incremental prediction. These quantities support geometric characterization,
+not pressure estimation or physical tissue-velocity inference.
 \end{abstract}
 
 \noindent\textbf{Keywords:} aphasia; chronic stroke; deformable registration;
@@ -96,15 +96,17 @@ The Aphasia Recovery Cohort (ARC) is an openly released chronic stroke imaging
 and behavioral resource \citep{Gibson2024}. Lesion anatomy strongly predicts
 aphasia severity, while tissue morphology beyond the lesion can contain
 additional information \citep{Teghipco2024}. We therefore asked three
-questions. First, can contralateral normalization yield a spatially explicit,
-lesional-only descriptor of chronic registration asymmetry? Second, do
-lesion-adjacent deformation summaries improve held-out WAB-AQ prediction beyond
-conventional lesion features? Third, do stationary log-velocity
-Helmholtz--Hodge descriptors explain additional variation or improve prediction
-after the displacement summaries? We used a participant-level bootstrap
-interval as the criterion for incremental predictive benefit and
-treated the log-velocity/Hodge extension as exploratory. All
-component--behavior correlations were descriptive secondary analyses.
+linked questions. First, can contralateral normalization and an explicitly
+audited stationary logarithm provide a numerically stable description of
+lesion-associated registration asymmetry? Second, do displacement or
+Helmholtz--Hodge descriptors retain associations with aphasia severity after
+accounting for conventional clinical and lesion variables? Third, do either
+feature family improve held-out WAB-AQ prediction? This ordering separates a
+methodological claim---a reproducible geometric construction---from stronger
+biological and predictive claims that require evidence beyond numerical
+validity. Component--behavior correlations and their adjusted counterparts were
+treated as secondary analyses. Incremental prediction was evaluated by a
+participant-bootstrap interval for the mean paired MAE advantage.
 
 \section{Materials and Methods}
 
@@ -276,12 +278,27 @@ contrast.
 Twelve descriptive Spearman correlations evaluated lesion volume,
 displacement, registration sensitivity, and Hodge descriptors. Participant
 bootstrap intervals used 5,000 resamples, and $p$ values were Holm-adjusted
-across all 12 correlations. A sensitivity analysis repeated the primary and
-Hodge model comparisons after excluding the single right-dominant case. ARC
-aphasia subtype is derived from WAB performance and was incomplete and
-imbalanced in the analysis table; it was therefore not treated as an
-independent prediction target. No additional task or subtype model was fit
-post hoc.
+across all 12 correlations. Six exploratory partial Spearman correlations were
+then estimated by residualizing ranked deformation/Hodge features and ranked AQ
+on ranked conventional-model variables: age at stroke, log assessment delay,
+total lesion volume, left and right language-network lesion burden, and lesion
+laterality. Participant-bootstrap intervals used 5,000 resamples. Two-sided
+residual-permutation $p$ values used 5,000 permutations and were Holm-adjusted
+across all six adjusted tests.
+
+Numerical robustness was evaluated with eight one-factor perturbations of the
+log-domain construction: Gaussian smoothing $\sigma=8$ or 12~mm, taper width 12
+or 20~mm, padding 16 or 32~mm, and analysis grids of 3 or 5~mm. Physical taper,
+smoothing, and padding scales were held approximately constant in the grid
+variants. Every variant retained the primary positive-Jacobian and 0.02
+exponentiation-error criteria. Feature ranks and unadjusted feature--AQ
+correlations were compared with the primary setting on shared QC cases.
+
+A separate sensitivity analysis repeated the primary and Hodge model
+comparisons after excluding the single right-dominant case. ARC aphasia subtype
+is derived from WAB performance and was incomplete and imbalanced in the
+analysis table; it was therefore not treated as an independent prediction
+target. No additional task or subtype model was fit post hoc.
 
 \section{Results}
 
@@ -343,40 +360,81 @@ harmonic components accounted for median energy fractions of
 These fractions characterize the stated tapered periodic embedding, not an
 anatomically unique decomposition.
 
+Across the \SensitivityVariantN{} numerical variants, Spearman rank stability relative to the
+primary setting was at least \SensitivityTotalStabilityMinimum{} for total RMS,
+\SensitivityCurlStabilityMinimum{} for curl-free fraction, and
+\SensitivityDivergenceStabilityMinimum{} for divergence-free fraction. The
+8-mm smoothing variant passed log-domain QC in
+\SensitivitySmoothingEightPassN{}/\HodgeExtractionN{} cases, the 12-mm taper
+variant in \SensitivityTaperTwelvePassN{}/\HodgeExtractionN{}, and the 5-mm
+grid in \SensitivityGridFivePassN{}/\HodgeExtractionN{}; every other variant
+passed all cases. Curl-free correlations with AQ remained negative across
+variants ($\rho=\SensitivityCurlAQMinimum{}$ to
+$\SensitivityCurlAQMaximum{}$), and divergence-free correlations remained
+positive ($\rho=\SensitivityDivergenceAQMinimum{}$ to
+$\SensitivityDivergenceAQMaximum{}$; Fig.~\ref{fig:hodge-sensitivity};
+Table~S5).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{hodge_sensitivity.pdf}
+\caption{\textbf{Numerical sensitivity of the stationary log-velocity/Hodge
+analysis.} (A) Rank stability of each descriptor relative to the primary
+construction. (B) Unadjusted component--AQ associations under the primary
+construction and eight one-factor perturbations. Parameter stability supports
+reproducibility within this family of tapered periodic embeddings; it does not
+establish anatomical uniqueness. Variant-specific quality-control counts and
+values are reported in Table~S5.}
+\label{fig:hodge-sensitivity}
+\end{figure}
+
 \subsection{Descriptive associations with WAB-AQ}
 
 Lesion volume had the largest descriptive association with WAB-AQ
 ($\rho=\LesionVolumeAQRho$, 95\% bootstrap interval
 \LesionVolumeAQCILow{} to \LesionVolumeAQCIHigh{}; Holm
 $p=\LesionVolumeAQP$). Greater displacement magnitude
-($\rho=\MagnitudeAQRho$, \MagnitudeAQCILow{} to \MagnitudeAQCIHigh{}) and
-absolute radial displacement ($\rho=\AbsoluteRadialAQRho$,
-\AbsoluteRadialAQCILow{} to \AbsoluteRadialAQCIHigh{}) were also associated
-with lower AQ (both Holm $p<0.001$). Signed radial displacement had
-a smaller negative association ($\rho=\RadialDirectionAQRho$,
-\RadialDirectionAQCILow{} to \RadialDirectionAQCIHigh{}; Holm
-$p=\RadialDirectionAQP$).
+($\rho=\MagnitudeAQRho$) and absolute radial displacement
+($\rho=\AbsoluteRadialAQRho$) were associated with lower AQ (both Holm
+$p<0.001$); signed radial displacement had a smaller negative association
+($\rho=\RadialDirectionAQRho$, Holm $p=\RadialDirectionAQP$). Deformation
+magnitude and absolute radial displacement were also correlated with lesion
+volume and with direct-versus-inpainted registration sensitivity (complete
+family in Table~S3).
 
 Total stationary-velocity RMS was not associated with AQ
-($\rho=\HodgeTotalAQRho$, \HodgeTotalAQCILow{} to \HodgeTotalAQCIHigh{};
-Holm $p=\HodgeTotalAQP$). A larger curl-free energy fraction was associated
-with lower AQ ($\rho=\HodgeCurlAQRho$, \HodgeCurlAQCILow{} to
-\HodgeCurlAQCIHigh{}; Holm $p=\HodgeCurlAQP$), whereas a larger
-divergence-free fraction was positively associated with AQ
-($\rho=\HodgeDivergenceAQRho$, \HodgeDivergenceAQCILow{} to
-\HodgeDivergenceAQCIHigh{}; Holm $p=\HodgeDivergenceAQP$). These correlations
-were descriptive and were not adjusted for lesion features. Figure
-\ref{fig:associations} displays the AQ associations; all 12 specified
-correlations are reported in the supplement.
+($\rho=\HodgeTotalAQRho$, Holm $p=\HodgeTotalAQP$). A larger curl-free energy
+fraction was associated with lower AQ ($\rho=\HodgeCurlAQRho$, Holm
+$p=\HodgeCurlAQP$), whereas a larger divergence-free fraction was associated
+with higher AQ ($\rho=\HodgeDivergenceAQRho$, Holm
+$p=\HodgeDivergenceAQP$). These results define an unadjusted descriptive
+pattern, not an independent association.
+
+After residualizing exposure and AQ ranks on age at stroke, assessment delay,
+lesion volume, bilateral language-network lesion burden, and lesion laterality,
+the displacement-magnitude association was partial
+$\rho=\AdjustedMagnitudeAQRho$ (95\% bootstrap interval
+\AdjustedMagnitudeAQCILow{} to \AdjustedMagnitudeAQCIHigh{}; Holm
+residual-permutation $p=\AdjustedMagnitudeAQP$). The curl-free result attenuated
+to partial $\rho=\AdjustedHodgeCurlAQRho$
+(\AdjustedHodgeCurlAQCILow{} to \AdjustedHodgeCurlAQCIHigh{}; Holm
+$p=\AdjustedHodgeCurlAQP$), and the divergence-free result was partial
+$\rho=\AdjustedHodgeDivergenceAQRho$
+(\AdjustedHodgeDivergenceAQCILow{} to
+\AdjustedHodgeDivergenceAQCIHigh{}; Holm
+$p=\AdjustedHodgeDivergenceAQP$). None of the six adjusted associations
+survived correction across the adjusted family (Fig.~\ref{fig:associations};
+Table~S4).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{association_forest.pdf}
-\caption{\textbf{Descriptive associations with WAB-AQ.} Points are Spearman
-correlations and bars are participant-bootstrap 95\% intervals. Multiplicity
-was controlled by Holm adjustment across the complete family of 12 descriptive
-correlations. Component fractions depend on the tapered periodic boundary
-construction and are not estimates of pressure or material properties.}
+\includegraphics[width=0.82\textwidth]{association_adjustment.pdf}
+\caption{\textbf{Unadjusted and conventional-feature-adjusted associations
+with WAB-AQ.} Circles show unadjusted Spearman correlations; squares show
+partial Spearman correlations after rank residualization on clinical and
+lesion variables. Bars are participant-bootstrap 95\% intervals. Multiplicity
+was controlled separately across the 12 unadjusted tests and six adjusted
+tests. Exact adjusted permutation $p$ values are reported in Table~S4.}
 \label{fig:associations}
 \end{figure}
 
@@ -387,8 +445,7 @@ interval \InterceptMAECILow--\InterceptMAECIHigh), and the clinical model had
 MAE \ClinicalMAE{} (\ClinicalMAECILow--\ClinicalMAECIHigh). The conventional
 lesion model improved MAE to \StandardMAE{} (\StandardMAECILow--
 \StandardMAECIHigh), with RMSE \StandardRMSE{}, $R^2=\StandardRSquared$, and
-Pearson $r=\StandardCorrelation$ (Table~\ref{tab:models};
-Fig.~\ref{fig:model}).
+Pearson $r=\StandardCorrelation$ (Table~S1; Fig.~S1).
 
 Adding displacement summaries yielded MAE \DeformationMAE{}
 (\DeformationMAECILow--\DeformationMAECIHigh). The primary mean MAE advantage
@@ -405,27 +462,9 @@ displacement summaries yielded MAE \DeformationHodgeMAE{} and a direct
 advantage of \HodgeAfterDeformationAdvantage{} points
 (\HodgeAfterDeformationCILow{} to \HodgeAfterDeformationCIHigh{}; $p=
 \HodgeAfterDeformationP$). Thus, the descriptive component--AQ associations did
-not translate into incremental held-out prediction.
-
-\begin{table}[t]
-\centering
-\caption{Out-of-fold performance averaged across 20 repeated outer-CV splits.
-MAE intervals use a participant bootstrap of repeat-averaged absolute errors.
-The same \AnalysisN{} participants and outer splits were used for every model.}
-\label{tab:models}
-\small
-\resizebox{\textwidth}{!}{\input{generated/model_table.tex}}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{model_comparison.pdf}
-\caption{\textbf{Repeated nested-CV model comparison.} (A) MAE across 20
-complete outer-CV repetitions. (B) Participant-level mean MAE advantages for
-the added feature family. Positive values favor the augmented model; bars are
-participant-bootstrap 95\% intervals. Each incremental interval crosses zero.}
-\label{fig:model}
-\end{figure}
+not translate into incremental held-out prediction. Complete performance
+metrics, paired comparisons, and repeated-split distributions are reported in
+Tables~S1--S2 and Figure~S1.
 
 The lesion-uncertainty sensitivity model had MAE \UncertaintyMAE{}. Adding
 displacement features produced MAE \CombinedMAE{} and a mean advantage of
@@ -433,38 +472,57 @@ displacement features produced MAE \CombinedMAE{} and a mean advantage of
 \AfterUncertaintyCIHigh{}; $p=\AfterUncertaintyP$). In the left-dominant-only
 cohort ($n=\LeftOnlyN$), the primary deformation advantage was
 \LeftOnlyDeformationAdvantage{} points (\LeftOnlyDeformationCILow{} to
-\LeftOnlyDeformationCIHigh{}), consistent with the full-cohort conclusion.
+\LeftOnlyDeformationCIHigh{}). Both intervals included zero, as did every
+incremental Hodge comparison in the left-dominant-only analysis (Table~S6).
 
 \section{Discussion}
 
-We constructed an auditable lesion-associated displacement proxy and extended
-it to a validated stationary log-velocity representation. The log-domain step
-implements the idea underlying diffeomorphic flow models: a velocity field is
-exponentiated to produce a deformation. It does not recover the time-dependent
-velocity optimized by LDDMM, because the input here is an affine-removed,
-mirrored-difference, one-sided field computed after registration. Requiring a
-positive-Jacobian smooth embedding and low exponentiation error makes the
-restricted stationary representation testable on each case.
+This study separates three levels of inference that are often conflated when
+registration fields are analyzed around focal lesions. At the numerical level,
+contralateral normalization, smooth embedding, stationary logarithm, and Hodge
+projection produced auditable descriptors with high rank stability across the
+tested parameter range. At the behavioral-association level, displacement
+magnitude and component balance covaried with aphasia severity, but those
+associations weakened after conventional clinical and lesion information was
+removed. At the predictive level, neither displacement nor Hodge features
+established incremental held-out benefit. The defensible contribution is
+therefore a reproducible geometric characterization and a clearly bounded
+negative predictive result, not a new mechanical biomarker.
 
-The Hodge decomposition showed that the divergence-free component carried most
-energy under the chosen embedding, while a greater curl-free fraction was
-descriptively associated with worse aphasia. Two cautions constrain this
-observation. First, the curl-free and divergence-free components depend on the
-raised-cosine taper, smoothing scale, padding, and periodic boundary condition;
-they are not unique anatomical properties. Second, Hodge descriptors neither
-improved the conventional lesion model nor added to the displacement model.
-The association may reflect lesion-linked geometry or residual registration
-structure rather than independent behavioral information.
+The log-domain step implements the group-theoretic idea underlying
+diffeomorphic flow models: a velocity field is exponentiated to produce a
+deformation. It does not recover the time-dependent velocity optimized by
+LDDMM, because the input here is an affine-removed, mirrored-difference,
+one-sided field computed after registration. Requiring a positive-Jacobian
+smooth embedding and low exponentiation error makes this restricted stationary
+representation testable on every case. The one-factor sensitivity analysis
+further shows which conclusions persist under nearby numerical choices and
+which variants lose cases under the same eligibility criteria.
 
-The primary displacement analysis likewise yielded a small apparent MAE
-reduction, but its participant-bootstrap interval included zero. The
-signed-rank result does not alter that conclusion: it concerns ranks of paired
-errors, whereas the target estimand was their mean. Deformation also
-added no value after soft lesion and boundary-uncertainty features. Informational
-overlap is plausible because deformation integrals, lesion uncertainty, and
-lesion burden all reflect lesion extent and boundary complexity. Measurement
-noise is another plausible contributor: proxy magnitude was only modestly
-larger than direct-versus-inpainted registration sensitivity.
+The divergence-free component carried most energy under the chosen embedding,
+whereas a larger curl-free fraction was descriptively associated with worse
+aphasia. Component ranks and association directions were stable across the
+tested perturbations, although reduced smoothing caused
+\SensitivitySmoothingEightFailureN{} log-domain QC failures and cannot be
+treated as interchangeable with the primary embedding. More importantly, the
+curl-free association attenuated after conventional-feature adjustment and did
+not survive correction across the adjusted family. The unadjusted pattern may
+therefore encode lesion-linked geometry, residual registration structure, or
+both. Boundary sensitivity and covariate attenuation answer different
+questions: numerical stability does not establish anatomical specificity.
+
+The primary displacement analysis yielded a small apparent MAE reduction, but
+its participant-bootstrap interval included zero. The signed-rank result does
+not alter that conclusion: it concerns ranks of paired errors, whereas the
+target estimand was their mean. Hodge features added no benefit either before
+or after the displacement summaries, and deformation added no benefit after
+soft-lesion and boundary-uncertainty features. Informational overlap is
+plausible because deformation integrals, lesion uncertainty, and lesion burden
+all reflect lesion extent and boundary complexity. Measurement noise is also
+plausible: proxy magnitude was only modestly larger than
+direct-versus-inpainted registration sensitivity. These results place an
+empirical limit on claims that registration-derived geometry supplies
+independent severity information in this cohort.
 
 No result estimates intracranial or tissue pressure. Pressure has units of force
 per area, whereas the stationary field here has displacement units over an
@@ -498,12 +556,14 @@ boundary conditions, not a renaming of registration features.
 \section{Conclusion}
 
 Contralateral normalization and a numerically validated stationary logarithm
-provide transparent geometric descriptions of chronic stroke registration
-asymmetry. In ARC, displacement and Hodge descriptors were associated with
-aphasia severity in unadjusted descriptive analyses, but neither established
-robust incremental WAB-AQ prediction beyond conventional lesion features. The
-analysis supports geometric characterization, not pressure estimation, physical
-tissue velocity, or causal mass effect.
+provided stable, transparent geometric descriptions of chronic stroke
+registration asymmetry. In ARC, displacement and Hodge descriptors tracked
+aphasia severity in unadjusted analyses, but no adjusted association survived
+multiplicity correction and neither feature family established incremental
+WAB-AQ prediction beyond conventional lesion features. The method is therefore
+useful as an auditable description of registration geometry, while the present
+evidence does not support pressure estimation, physical tissue-velocity
+inference, causal mass effect, or an independent aphasia biomarker.
 
 \section*{Data and Code Availability}
 

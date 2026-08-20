@@ -26,6 +26,7 @@ the ARC root.
 | `case_metrics.csv` | unique `case_id`, `wab_aq`, age, assessment delay, lesion burden/location | Outcome and reference predictors |
 | `uncertainty_manifest.csv` | unique `case_id`, soft lesion and entropy summaries | Optional sensitivity model |
 | `hodge_manifest.csv` | unique `case_id`, method/QC fields, aggregate log-velocity/Hodge descriptors | Generated secondary predictors |
+| variant `hodge_manifest.csv` files | unique `case_id`, variant setting, QC, and descriptors | Private numerical-sensitivity intermediates |
 
 The model rejects duplicate cases, mixed deformation-method versions, multiple
 cases per participant after matching, and missing outcome values. All models in
@@ -52,6 +53,7 @@ excluded from the stored lesion-effect field.
 - raw BIDS images;
 - subject-level NIfTI derivatives;
 - joined clinical/design tables;
+- primary and numerical-variant case-level Hodge manifests;
 - long-form out-of-fold predictions;
 - any local credentials or cluster paths not already public dataset metadata.
 

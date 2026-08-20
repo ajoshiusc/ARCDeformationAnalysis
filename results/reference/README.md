@@ -10,6 +10,12 @@ redistributing participant clinical data or images.
 - `metrics_by_repeat.csv`: aggregate performance for each repeat and model;
 - `deformation_associations.csv`: 12 descriptive correlations with bootstrap
   intervals and Holm-adjusted p-values;
+- `adjusted_deformation_associations.csv`: six partial rank correlations with
+  participant-bootstrap intervals and Holm-adjusted residual-permutation
+  p-values;
+- `hodge_parameter_sensitivity.csv` and `.json`: aggregate QC, rank stability,
+  AQ-association direction, settings, and hashes for eight one-factor numerical
+  variants;
 - `left_only_model_summary.csv` and `left_only_paired_comparisons.csv`:
   left-dominant-lesion sensitivity results;
 - `coefficient_summary.csv`: aggregate standardized ridge-coefficient stability;
@@ -22,5 +28,6 @@ redistributing participant clinical data or images.
 - `reproduction_check.json`: exact legacy-output and new-analysis checks;
 - `figures/`: technical paper figures.
 
-The case-level Hodge manifest, joined design, fold coefficients, and out-of-fold
-predictions are generated under `results/runs/` and intentionally ignored.
+The primary and variant case-level Hodge manifests, joined design, fold
+coefficients, and out-of-fold predictions are generated under `results/runs/`
+and intentionally ignored.

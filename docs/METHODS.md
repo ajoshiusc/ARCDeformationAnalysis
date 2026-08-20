@@ -88,6 +88,18 @@ the estimand because Hodge components are boundary-condition dependent.
 No output is pressure. Pressure recovery requires a constitutive mechanical
 model, tissue parameters, loads, and boundary conditions absent from ARC.
 
+### Numerical sensitivity
+
+Eight fixed one-factor variants test Gaussian smoothing at 8 and 12 mm,
+raised-cosine taper widths of 12 and 20 mm, padding of 16 and 32 mm, and 3- and
+5-mm grids. The grid variants preserve the primary 10-mm smoothing, 16-mm taper,
+and approximately 24-mm padding in physical units. Every variant uses the same
+positive-Jacobian and relative exponentiation-RMSE threshold as the primary
+analysis. Expected numerical failures are retained as QC failures rather than
+causing the cohort run to abort. Aggregate outputs report QC counts, rank
+stability against the primary descriptors, and unadjusted AQ-association
+directions; case-level variant manifests remain private.
+
 ## Prediction
 
 The primary reference model includes age at stroke, log-transformed days from
@@ -112,5 +124,12 @@ An intercept-only benchmark, participant-bootstrap intervals for each model's
 absolute MAE, a left-dominant-lesion-only rerun, and 12 Holm-controlled
 descriptive Spearman correlations are also reported. Hodge models test the
 three log-domain descriptors after conventional lesion features and again after
-the displacement summaries. WAB aphasia subtype and individual language tasks
-are not modeled post hoc.
+the displacement summaries.
+
+Six exploratory partial Spearman correlations residualize the ranks of each
+deformation/Hodge exposure and AQ on ranked conventional clinical and lesion
+features. Their 95% intervals use 5,000 participant bootstraps. Two-sided
+residual-permutation p-values use 5,000 permutations and are Holm-adjusted over
+the six-test family. WAB aphasia subtype is not modeled: it is derived from WAB,
+is missing in 29 participants, and includes classes with only four or five
+cases. The joined analysis table contains no independent language-task outcome.

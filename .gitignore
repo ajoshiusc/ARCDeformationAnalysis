@@ -36,3 +36,8 @@ paper/*.synctex.gz
 .idea/
 .vscode/
 *~
+paper/main.pdf
+paper/cover_letter.pdf
+paper/main.pdf
+paper/submission.pdf
+paper/supplement.pdf

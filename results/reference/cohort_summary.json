@@ -79,6 +79,17 @@
     "q3": 1.7066714897879922,
     "digits": 2
   },
+  "wab_type": {
+    "missing": 29,
+    "counts": {
+      "Broca": 77,
+      "Anomic": 57,
+      "Conduction": 25,
+      "Global": 13,
+      "Wernicke": 5,
+      "TranscorticalMotor": 4
+    }
+  },
   "log_velocity_hodge": {
     "extraction_cases": 214,
     "extraction_qc_pass_cases": 214,

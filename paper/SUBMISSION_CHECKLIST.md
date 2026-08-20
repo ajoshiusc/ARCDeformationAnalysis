@@ -1,6 +1,6 @@
 # Imaging Neuroscience submission checklist
 
-Checked against the journal's official Guide for Authors on 2026-08-19.
+Checked against the journal's official Guide for Authors on 2026-08-20.
 
 ## Complete
 
@@ -14,11 +14,13 @@ Checked against the journal's official Guide for Authors on 2026-08-19.
 - Ethics/consent statement and public-dataset exemption identifier.
 - Data and Code Availability, Author Contributions, Funding, Declaration of
   Competing Interests, and generative-AI disclosure sections present.
-- Main manuscript, supplement, and cover-letter sources build with
-  `make submission`.
+- Main manuscript, supplement, combined first-submission PDF, and cover-letter
+  sources build with `make submission`.
 - All numerical claims are generated from aggregate result files; no outcome is
   manually entered into the manuscript.
 - Pressure and physical-velocity claims are explicitly excluded.
+- Primary predictive results are unchanged after the robustness extension;
+  adjusted associations and eight numerical Hodge variants are fully reported.
 
 ## Author confirmation required before upload
 
@@ -40,6 +42,8 @@ These are factual declarations and are deliberately not inferred by software:
 
 - `paper/main.pdf` (main manuscript);
 - `paper/supplement.pdf` (supplementary material);
+- `paper/submission.pdf` (preferred all-in-one first-submission manuscript and
+  supplementary material);
 - figure PDFs/PNGs from `paper/generated/` and
   `results/reference/figures/` if requested separately;
 - `paper/cover_letter.pdf` after the confirmations above.

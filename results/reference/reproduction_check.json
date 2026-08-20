@@ -5,11 +5,15 @@
   "analysis_subjects": 210,
   "hodge_input_cases": 214,
   "hodge_qc_pass_cases": 214,
+  "adjusted_association_tests": 6,
+  "hodge_parameter_sensitivity_variants": 8,
+  "hodge_sensitivity_minimum_rank_correlation": 0.9909747003568513,
+  "preexisting_model_and_inference_outputs_identical": true,
   "legacy_model_summary_numeric_maximum_delta": 0.0,
   "legacy_metrics_by_repeat_numeric_maximum_delta": 0.0,
   "legacy_paired_comparison_nonmultiplicity_maximum_delta": 0.0,
   "maps_checked": 1070,
   "contralesional_nonzero_values": 0,
   "legacy_predictive_feature_maximum_delta": 0.0,
-  "notes": "Legacy predictions, metrics, bootstrap intervals, Wilcoxon statistics, and raw p-values are exact. Holm-adjusted p-values were recomputed for the expanded model family. New outputs add an intercept benchmark, absolute-MAE intervals, log-velocity/Hodge models, 12 descriptive associations, and a left-lesion-only sensitivity analysis."
+  "notes": "Legacy predictions, metrics, bootstrap intervals, Wilcoxon statistics, and raw p-values are exact. Holm-adjusted p-values were recomputed for the expanded model family. The robustness extension leaves every prior aggregate model result byte-identical and adds six conventional-feature-adjusted associations plus eight one-factor Hodge parameter variants."
 }

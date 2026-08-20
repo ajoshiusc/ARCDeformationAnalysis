@@ -188,7 +188,8 @@
   "secondary_analyses": {
     "hodge": "Stationary log-velocity of a regularized displacement embedding, followed by periodic-grid Helmholtz--Hodge decomposition; a registration parameter, not physical velocity or pressure",
     "left_lesion_only_subjects": 209,
-    "descriptive_association_multiplicity": "Holm adjustment across 12 tests"
+    "descriptive_association_multiplicity": "Holm adjustment across 12 tests",
+    "adjusted_associations": "Partial Spearman correlations after rank residualization on the conventional clinical and lesion variables; participant-bootstrap intervals and residual-permutation p-values, Holm-adjusted across 6 tests"
   },
   "interpretation_warning": "Cross-sectional lesion-associated deformation proxy; not physical ground-truth mass effect or pressure."
 }

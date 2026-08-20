@@ -29,6 +29,9 @@ velocity_maximum_iterations = 6
 velocity_reconstruction_tolerance = 0.02
 n_jobs = 3
 
+[sensitivity]
+n_jobs = 8
+
 [audit]
 expected_cases = 214
 check_maps = false

@@ -6,10 +6,13 @@
 \usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
 \input{generated/results.tex}
 
-\title{Supplementary Material: Contralateral-Normalized Deformation and
-Stationary Log-Velocity Decomposition after Chronic Stroke}
+\title{Supplementary Material: Geometric Decomposition of Chronic Stroke
+Registration Asymmetry}
 \author{Anand A. Joshi}
 \date{}
+
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 
 \begin{document}
 \maketitle
@@ -30,26 +33,80 @@ across repeated splits are not treated as inferential confidence intervals.
 \resizebox{\textwidth}{!}{\input{generated/model_table_all.tex}}
 \end{table}
 
+Table~S2 reports every prespecified paired comparison, including secondary
+comparisons whose intervals include zero. A positive mean advantage indicates
+lower repeat-averaged absolute error for the comparison model. The ``Improved''
+column is the percentage of participants with a positive individual advantage;
+it is descriptive and is not the superiority criterion. Holm $p$ values apply
+to the comparison family encoded in the frozen result table and do not replace
+the participant-bootstrap interval for the mean advantage.
+
+\begin{table}[ht]
+\centering
+\caption{Complete paired MAE comparisons in the full cohort.}
+\label{tab:all-comparisons}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/paired_comparison_table.tex}}
+\end{table}
+
 The direct incremental mean MAE advantage of deformation after lesion
 uncertainty was \AfterUncertaintyAdvantage{} points (95\% participant-bootstrap
 interval \AfterUncertaintyCILow{} to \AfterUncertaintyCIHigh{}). The direct
 incremental advantage of log-velocity Hodge features after displacement
 features was \HodgeAfterDeformationAdvantage{} points
-(\HodgeAfterDeformationCILow{} to \HodgeAfterDeformationCIHigh{}).
+(\HodgeAfterDeformationCILow{} to \HodgeAfterDeformationCIHigh{}). Neither
+interval excluded zero.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{generated/model_comparison.pdf}
+\caption{\textbf{Repeated nested-CV model comparison.} (A) MAE across 20
+complete outer-CV repetitions. (B) Participant-level mean MAE advantages for
+the added feature family. Positive values favor the augmented model; bars are
+participant-bootstrap 95\% intervals. Every incremental interval shown crosses
+zero.}
+\label{fig:model-comparison}
+\end{figure}
 
 \section{Complete descriptive-association family}
 
-The 12 correlations in Table~S2 formed one descriptive multiplicity family.
+The 12 correlations in Table~S3 formed one descriptive multiplicity family.
 Intervals are participant-bootstrap 95\% intervals; $p$ values are Holm
 adjusted across all rows. These are bivariate descriptions, not covariate-adjusted
 effects or causal estimates.
 
 \begin{table}[ht]
 \centering
-\caption{Descriptive Spearman correlations.}
+\caption{Complete family of descriptive Spearman correlations.}
 \label{tab:associations}
 \scriptsize
 \resizebox{\textwidth}{!}{\input{generated/association_table.tex}}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.82\textwidth]{generated/association_forest.pdf}
+\caption{\textbf{Unadjusted associations with WAB-AQ.} Points are Spearman
+correlations and bars are participant-bootstrap 95\% intervals. Multiplicity
+was controlled across the complete 12-test family in Table~S3.}
+\label{fig:unadjusted-associations}
+\end{figure}
+
+\section{Conventional-feature-adjusted associations}
+
+Table~S4 reports partial Spearman correlations after both the exposure and AQ
+ranks were residualized on ranked age at stroke, log WAB assessment delay,
+total lesion volume, left and right language-network lesion burden, and lesion
+laterality. Intervals resample participants. Residual-permutation $p$ values
+are two-sided and Holm-adjusted across the six rows. No adjusted association
+survived that multiplicity correction.
+
+\begin{table}[ht]
+\centering
+\caption{Exploratory partial Spearman associations with WAB-AQ.}
+\label{tab:adjusted-associations}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/adjusted_association_table.tex}}
 \end{table}
 
 \section{Log-domain numerical audit}
@@ -72,13 +129,59 @@ energies reconstructed total energy to floating-point precision in every case.
 Because Hodge components on bounded domains depend on boundary conditions, the
 reported fractions apply only to this stated tapered periodic construction.
 
+\section{Hodge parameter sensitivity}
+
+Eight one-factor perturbations varied smoothing, taper, padding, and grid
+resolution around the primary setting. Table~S5 gives log-domain QC, rank
+stability relative to the primary descriptor, and the unadjusted AQ
+correlations. The smallest stability correlation was
+\SensitivityTotalStabilityMinimum{}. Smoothing at 8~mm passed
+\SensitivitySmoothingEightPassN{}/\HodgeExtractionN{} cases, a 12-mm taper
+passed \SensitivityTaperTwelvePassN{}/\HodgeExtractionN{}, and a 5-mm grid
+passed \SensitivityGridFivePassN{}/\HodgeExtractionN{}; the remaining variants
+passed all \HodgeExtractionN{} cases. Component--AQ directions were unchanged,
+but these checks do not make the components anatomical or mechanical
+quantities.
+
+\begin{table}[ht]
+\centering
+\caption{One-factor sensitivity of log-velocity/Hodge descriptors. Stability
+columns are Spearman correlations with the primary descriptor; Curl--AQ and
+Div--AQ are unadjusted Spearman correlations.}
+\label{tab:hodge-sensitivity}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/hodge_sensitivity_table.tex}}
+\end{table}
+
+\section{Outcome-scope audit}
+
+WAB aphasia type was unavailable for \WABTypeMissingN{} of \AnalysisN{}
+participants. Available counts were Broca \WABTypeBrocaN{}, anomic
+\WABTypeAnomicN{}, conduction \WABTypeConductionN{}, global
+\WABTypeGlobalN{}, Wernicke \WABTypeWernickeN{}, and transcortical motor
+\WABTypeTranscorticalMotorN{}. Because type is derived from the WAB examination
+used to define AQ, and because the rare classes do not support a credible
+held-out classifier, subtype was not introduced as a second endpoint. The
+frozen joined table contained no independent language-task outcome suitable
+for an additional analysis.
+
 \section{Left-dominant-lesion sensitivity analysis}
 
 Excluding the single right-dominant case left $n=\LeftOnlyN$. The mean MAE
 advantage of displacement features was \LeftOnlyDeformationAdvantage{} points
 (95\% participant-bootstrap interval \LeftOnlyDeformationCILow{} to
-\LeftOnlyDeformationCIHigh{}), again failing the superiority
-criterion.
+\LeftOnlyDeformationCIHigh{}), again failing the superiority criterion.
+Table~S6 reports the full left-dominant-only comparison family; none of the
+incremental deformation or Hodge intervals excluded zero.
+
+\begin{table}[ht]
+\centering
+\caption{Paired MAE comparisons after excluding the single right-dominant
+lesion case.}
+\label{tab:left-only-comparisons}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/left_only_comparison_table.tex}}
+\end{table}
 
 \section{Interpretation boundary}
 

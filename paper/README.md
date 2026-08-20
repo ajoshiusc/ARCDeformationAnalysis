@@ -7,13 +7,20 @@ Generate all submission PDFs from the repository root with:
 make submission
 ```
 
-The reporting command first regenerates `paper/generated/results.tex`, model
-tables, the model-comparison figure, and the association figure from frozen
-aggregate CSV/JSON files. `latexmk` then builds:
+The reporting command first regenerates `paper/generated/results.tex`, model,
+paired-comparison, association, adjusted-association, and Hodge-sensitivity
+tables, plus the model-comparison, association, adjustment, and numerical
+sensitivity figures from frozen aggregate CSV/JSON files. `latexmk` then
+builds:
 
 - `main.pdf`;
 - `supplement.pdf`;
 - `cover_letter.pdf`.
+
+The submission target also creates `submission.pdf`, an all-in-one
+first-submission file containing the main manuscript followed by the complete
+supplement. The separate supplement remains available for a revision or for
+Editorial Manager if requested.
 
 The main text uses author-year APA-style citations, a single-paragraph abstract,
 six keywords, numbered sections, page numbers, and line numbers. The paper

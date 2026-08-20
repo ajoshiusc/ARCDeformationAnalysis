@@ -11,6 +11,8 @@ from arc_deformation.constants import (
 )
 from arc_deformation.modeling import (
     ModelConfig,
+    _partial_rank_correlation,
+    adjusted_deformation_associations,
     holm_adjust,
     model_feature_sets,
     paired_comparisons,
@@ -119,3 +121,29 @@ def test_paired_comparison_reports_mean_interval_estimand() -> None:
     result = paired_comparisons(pd.DataFrame(rows), "reference", 200, 3).iloc[0]
     assert result["mean_mae_advantage_points"] == 1.0
     assert bool(result["mean_advantage_ci_excludes_zero"])
+
+
+def test_partial_rank_correlation_removes_ranked_covariate_effect() -> None:
+    rng = np.random.default_rng(31)
+    covariate = np.linspace(-2, 2, 80)
+    frame = pd.DataFrame(
+        {
+            "exposure": covariate + rng.normal(0, 0.1, len(covariate)),
+            "outcome": covariate + rng.normal(0, 0.1, len(covariate)),
+            "covariate": covariate,
+        }
+    )
+    crude = frame[["exposure", "outcome"]].corr(method="spearman").iloc[0, 1]
+    adjusted, _, _ = _partial_rank_correlation(frame, "exposure", "outcome", ("covariate",))
+    assert crude > 0.9
+    assert abs(adjusted) < 0.25
+
+
+def test_adjusted_associations_are_complete_and_deterministic() -> None:
+    design = _synthetic_design(40)
+    first = adjusted_deformation_associations(design, "wab_aq", 100, 41)
+    second = adjusted_deformation_associations(design, "wab_aq", 100, 41)
+    assert len(first) == 3
+    assert first["n_subjects"].eq(40).all()
+    assert first["permutation_p_value_holm"].between(0, 1).all()
+    pd.testing.assert_frame_equal(first, second)

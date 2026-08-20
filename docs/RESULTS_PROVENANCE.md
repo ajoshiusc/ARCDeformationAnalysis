@@ -13,9 +13,14 @@ The aggregate results in `results/reference/` were regenerated on 2026-08-19.
 
 Reference aggregate hashes:
 
-- `analysis_config.json`: `a1c75e7ed59cea627d0daaba562c17ce922c0840a36b114cd690c445ceceb76b`;
+- `analysis_config.json`: `f24862d70076ee01e67ca7fe00d9e22c6549428a8564acdca53e6d39d70b8cf8`;
 - `hodge_summary.json`: `b920630fab7857b8c04ca0cef09876e4ac5a66b09b431587466c3e821de01acd`;
-- `hodge_config.json`: `14d7eebce814d6cd820278a375feb41df0ee9df1585a506dcb525a92cabb3ce2`.
+- `hodge_config.json`: `14d7eebce814d6cd820278a375feb41df0ee9df1585a506dcb525a92cabb3ce2`;
+- `adjusted_deformation_associations.csv`: `91ecd750a403e47c19c0c4f08aff7a70642b34d17312e48475a6cf4efeb8d69a`;
+- `hodge_parameter_sensitivity.csv`: `04346ffdf849a9c039fcd051bd3d4bb3a0cba30644c8a061508c05ce45ceeca8`;
+- `hodge_parameter_sensitivity.json`: `17613a566e03c802e6f9f223e60b0d47c0dff51c942288fbe65eddc8c7df6510`;
+- `cohort_summary.json`: `df5a21bc1afb1bda8474f8797aac578beadbd8826861711243eddb2a87ca32cc`;
+- `reproduction_check.json`: `70f0e3f8f85976406c8c45716f03fb279708c46127e1ab39becf2e8b7f223f0f`.
 
 ## Cohort flow
 
@@ -53,6 +58,15 @@ Prediction:
 - seed 2026;
 - identical outer splits for all feature families.
 
+Adjusted associations residualized ranked exposures and ranked AQ on the six
+conventional clinical/lesion variables. They used 5,000 participant bootstraps,
+5,000 two-sided residual permutations, and Holm correction across six tests.
+
+The Hodge sensitivity analysis changed one numerical factor at a time: 8/12-mm
+smoothing, 12/20-mm taper, 16/32-mm padding, and 3/5-mm grids. Grid variants
+preserved the primary physical regularization scales. All used the primary
+positive-Jacobian and 0.02 exponentiation-error criteria.
+
 ## Results
 
 The conventional lesion model had MAE 16.42 AQ points. Adding displacement
@@ -69,13 +83,30 @@ The curl-free energy fraction was descriptively associated with AQ (Spearman
 rho −0.240, bootstrap CI −0.365 to −0.104, Holm-adjusted p = 0.002), but Hodge
 features did not add held-out predictive value. This is not a pressure result.
 
+After adjustment for conventional clinical and lesion variables, the curl-free
+result was partial Spearman rho −0.159 (bootstrap CI −0.290 to −0.028; Holm
+residual-permutation p = 0.116), and the divergence-free result was rho 0.138
+(0.011 to 0.261; Holm p = 0.186). None of the six adjusted associations survived
+multiplicity correction.
+
+Across eight numerical variants, the minimum rank correlation with the primary
+descriptor was 0.991. Curl-free correlations with AQ ranged from −0.263 to
+−0.220, and divergence-free correlations ranged from 0.149 to 0.206. The 8-mm
+smoothing variant passed log-domain QC in 207/214 cases, the 12-mm taper in
+212/214, and the 5-mm grid in 213/214; every other variant passed 214/214.
+
 ## Independent checks
 
 Relative to the initial frozen analysis, every numeric value in the six legacy
 model summaries and 120 legacy repeat-level metric rows is exact (maximum delta
 0.0). Legacy paired-comparison point estimates, bootstrap intervals, Wilcoxon
 statistics, and raw p-values are also exact. Holm-adjusted p-values were
-recomputed because the comparison family expanded.
+recomputed because the comparison family expanded. The subsequent adjusted-
+association and Hodge-parameter robustness extension left all prior aggregate
+model, comparison, unadjusted-association, coefficient, left-dominant
+sensitivity files byte-identical. Previously reported cohort-summary values were
+unchanged; the file was extended only with aggregate WAB-type availability and
+class counts used to document why subtype prediction was not attempted.
 
 The read-only spatial audit loaded 1,070 NIfTI maps (five per case), found zero
 nonzero or nonfinite contralesional values, and found zero v1-to-v2 change in

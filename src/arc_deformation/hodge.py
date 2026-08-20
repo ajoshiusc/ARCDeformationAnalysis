@@ -265,9 +265,10 @@ def periodic_hodge_decomposition(
     )
 
 
-def _one_case(
+def extract_hodge_case(
     record: dict[str, object], arc_root: Path, config: HodgeConfig
 ) -> dict[str, object]:
+    """Extract one case from a validated mass-effect manifest record."""
     vector_path = localize_arc_path(str(record["mass_effect_vector_path"]), arc_root)
     valid_path = localize_arc_path(str(record["valid_mask_path"]), arc_root)
     vector_image = nib.load(vector_path)
@@ -317,12 +318,12 @@ def run_hodge_extraction(
         raise ValueError(f"Hodge extraction requires {METHOD_VERSION!r}, found {versions}")
     records = frame.sort_values(["subject", "case_id"]).to_dict("records")
     if n_jobs == 1:
-        results = [_one_case(record, Path(arc_root), config) for record in records]
+        results = [extract_hodge_case(record, Path(arc_root), config) for record in records]
     else:
         with ProcessPoolExecutor(max_workers=n_jobs) as executor:
             results = list(
                 executor.map(
-                    _one_case,
+                    extract_hodge_case,
                     records,
                     [Path(arc_root)] * len(records),
                     [config] * len(records),

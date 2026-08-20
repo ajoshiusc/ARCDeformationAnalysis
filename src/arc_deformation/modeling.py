@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr, wilcoxon
+from scipy.stats import rankdata, spearmanr, wilcoxon
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -565,6 +565,117 @@ def deformation_associations(
     return result
 
 
+def _partial_rank_correlation(
+    frame: pd.DataFrame,
+    exposure: str,
+    outcome: str,
+    covariates: tuple[str, ...],
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Return a partial Spearman correlation and its two rank residuals."""
+    ranked = np.column_stack(
+        [rankdata(frame[column].to_numpy(float), method="average") for column in frame]
+    )
+    x_rank = ranked[:, 0]
+    y_rank = ranked[:, 1]
+    adjustment = np.column_stack([np.ones(len(frame)), ranked[:, 2:]])
+    x_residual = x_rank - adjustment @ np.linalg.lstsq(adjustment, x_rank, rcond=None)[0]
+    y_residual = y_rank - adjustment @ np.linalg.lstsq(adjustment, y_rank, rcond=None)[0]
+    correlation = pearson_r(x_residual, y_residual)
+    if not np.isfinite(correlation):
+        raise ValueError(
+            f"Partial rank correlation is undefined for {exposure}, {outcome}, "
+            f"and covariates {covariates}"
+        )
+    return correlation, x_residual, y_residual
+
+
+def adjusted_deformation_associations(
+    design: pd.DataFrame,
+    outcome: str,
+    bootstrap_samples: int,
+    seed: int,
+) -> pd.DataFrame:
+    """Exploratory partial Spearman associations beyond conventional features.
+
+    Both the exposure and outcome ranks are residualized on ranked conventional
+    clinical and lesion variables. Percentile intervals resample participants;
+    two-sided residual-permutation p-values are Holm-adjusted over the complete
+    adjusted-association family.
+    """
+    covariates = CLINICAL_FEATURES + LESION_FEATURES
+    specifications = (
+        (
+            "adjusted_magnitude_vs_aq",
+            "me_mass_effect_3_20mm_magnitude_mm_median",
+        ),
+        (
+            "adjusted_absolute_radial_vs_aq",
+            "me_mass_effect_3_20mm_mean_absolute_radial_mm",
+        ),
+        (
+            "adjusted_radial_direction_vs_aq",
+            "me_mass_effect_3_20mm_radial_mm_median",
+        ),
+    )
+    if all(feature in design for feature in HODGE_FEATURES):
+        specifications += (
+            ("adjusted_hodge_total_rms_vs_aq", "hhd_total_rms_mm"),
+            (
+                "adjusted_hodge_curl_free_fraction_vs_aq",
+                "hhd_curl_free_energy_fraction",
+            ),
+            (
+                "adjusted_hodge_divergence_free_fraction_vs_aq",
+                "hhd_divergence_free_energy_fraction",
+            ),
+        )
+    rng = np.random.default_rng(seed)
+    rows: list[dict[str, object]] = []
+    for name, exposure in specifications:
+        columns = (exposure, outcome) + covariates
+        frame = design[list(columns)].apply(pd.to_numeric, errors="coerce").dropna()
+        observed, x_residual, y_residual = _partial_rank_correlation(
+            frame, exposure, outcome, covariates
+        )
+        bootstrap = np.empty(bootstrap_samples, dtype=float)
+        for index in range(bootstrap_samples):
+            sample = rng.integers(0, len(frame), size=len(frame))
+            sampled = frame.iloc[sample].reset_index(drop=True)
+            bootstrap[index] = _partial_rank_correlation(
+                sampled, exposure, outcome, covariates
+            )[0]
+        finite = bootstrap[np.isfinite(bootstrap)]
+        if len(finite) < 0.99 * bootstrap_samples:
+            raise RuntimeError(f"Too many invalid bootstrap correlations for {name}")
+        lower, upper = np.percentile(finite, [2.5, 97.5])
+        permutation = np.empty(bootstrap_samples, dtype=float)
+        for index in range(bootstrap_samples):
+            permutation[index] = pearson_r(x_residual, rng.permutation(y_residual))
+        p_value = (1 + np.count_nonzero(np.abs(permutation) >= abs(observed))) / (
+            bootstrap_samples + 1
+        )
+        rows.append(
+            {
+                "association": name,
+                "exposure": exposure,
+                "outcome": outcome,
+                "covariates": ";".join(covariates),
+                "n_subjects": len(frame),
+                "partial_spearman_rho": observed,
+                "bootstrap_ci025": float(lower),
+                "bootstrap_ci975": float(upper),
+                "permutation_p_value": float(p_value),
+                "bootstrap_samples": bootstrap_samples,
+                "permutations": bootstrap_samples,
+            }
+        )
+    result = pd.DataFrame(rows)
+    result["permutation_p_value_holm"] = holm_adjust(
+        result["permutation_p_value"].to_numpy(float)
+    )
+    return result
+
+
 def aggregate_cohort_summary(
     design: pd.DataFrame, audit: dict[str, object]
 ) -> dict[str, object]:
@@ -614,6 +725,13 @@ def aggregate_cohort_summary(
             "me_mass_effect_to_registration_sensitivity_ratio", 2
         ),
     }
+    if "wab_type" in design:
+        wab_type = design["wab_type"].replace(r"^\s*$", np.nan, regex=True)
+        counts = wab_type.dropna().astype(str).value_counts()
+        summary["wab_type"] = {
+            "missing": int(wab_type.isna().sum()),
+            "counts": {str(label): int(count) for label, count in counts.items()},
+        }
     if all(column in design for column in HODGE_FEATURES):
         summary["log_velocity_hodge"] = {
             "extraction_cases": int(audit["hodge_manifest_rows"]),
@@ -700,6 +818,9 @@ def run_modeling(
     associations = deformation_associations(
         design, config.outcome, config.bootstrap_samples, config.seed + 499955
     )
+    adjusted_associations = adjusted_deformation_associations(
+        design, config.outcome, config.bootstrap_samples, config.seed + 549950
+    )
 
     left_design = design.loc[design["me_lesion_side"].eq("left")].reset_index(drop=True)
     sensitivity_models = {
@@ -750,6 +871,7 @@ def run_modeling(
     atomic_csv(output_dir / "paired_comparisons.csv", comparisons)
     atomic_csv(output_dir / "model_mae_inference.csv", mae_inference)
     atomic_csv(output_dir / "deformation_associations.csv", associations)
+    atomic_csv(output_dir / "adjusted_deformation_associations.csv", adjusted_associations)
     atomic_csv(output_dir / "left_only_metrics_by_repeat.csv", left_metrics)
     atomic_csv(output_dir / "left_only_model_summary.csv", left_summary)
     atomic_csv(output_dir / "left_only_paired_comparisons.csv", left_comparisons)
@@ -788,6 +910,12 @@ def run_modeling(
             "left_lesion_only_subjects": len(left_design),
             "descriptive_association_multiplicity": (
                 f"Holm adjustment across {len(associations)} tests"
+            ),
+            "adjusted_associations": (
+                "Partial Spearman correlations after rank residualization on the "
+                "conventional clinical and lesion variables; participant-bootstrap "
+                "intervals and residual-permutation p-values, Holm-adjusted across "
+                f"{len(adjusted_associations)} tests"
             ),
         },
         "interpretation_warning": (

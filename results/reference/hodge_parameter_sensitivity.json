@@ -1,0 +1,166 @@
+{
+  "method_version": "hodge_parameter_sensitivity_v1",
+  "interpretation": "One-factor numerical sensitivity analysis; Hodge descriptors are registration geometry, not physical velocity or pressure",
+  "primary_analysis_cases": 210,
+  "primary_hodge_manifest": "/tmp/arc-hodge-final-20260819/hodge_manifest.csv",
+  "primary_hodge_manifest_sha256": "660f308c412785b800672f08e76989c5464528c6e1f39e2719e903673a01488a",
+  "mass_effect_manifest_sha256": "fc812c6d668e85ebdb999f1f6c4d4418bce745d94e2090eb2898503afe905098",
+  "clinical_table_sha256": "521f37aab0a6da1b4a284a77abb720a0eda4e40ecb1deaff23ebcbeb236c2ca5",
+  "primary_design_audit": {
+    "mass_effect_rows": 214,
+    "mass_effect_method_versions": [
+      "contralateral_control_lesional_only_v2"
+    ],
+    "mass_effect_clinical_matches": 211,
+    "rows_after_deformation_qc": 210,
+    "uncertainty_coverage_before_matching": 0.0,
+    "uncertainty_models_used": false,
+    "hodge_coverage_before_matching": 1.0,
+    "hodge_models_used": true,
+    "hodge_manifest_rows": 214,
+    "hodge_qc_pass_rows": 214,
+    "analysis_subjects": 210
+  },
+  "variants": [
+    {
+      "name": "smoothing_8mm",
+      "rationale": "Gaussian smoothing sigma reduced from 10 to 8 mm",
+      "config": {
+        "stride": 4,
+        "padding": 6,
+        "boundary_taper_width_voxels": 4.0,
+        "displacement_smoothing_sigma_voxels": 2.0,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 207,
+      "manifest_sha256": "1f64b644f698ea19f621857e3c54568a2f7dbde268db66c7539ce7e5663801e8"
+    },
+    {
+      "name": "smoothing_12mm",
+      "rationale": "Gaussian smoothing sigma increased from 10 to 12 mm",
+      "config": {
+        "stride": 4,
+        "padding": 6,
+        "boundary_taper_width_voxels": 4.0,
+        "displacement_smoothing_sigma_voxels": 3.0,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 214,
+      "manifest_sha256": "d8d7288186e5eadeaeec5a8f6011bae150723fff65f9065895e6d39ad1514b99"
+    },
+    {
+      "name": "taper_12mm",
+      "rationale": "Raised-cosine boundary taper reduced from 16 to 12 mm",
+      "config": {
+        "stride": 4,
+        "padding": 6,
+        "boundary_taper_width_voxels": 3.0,
+        "displacement_smoothing_sigma_voxels": 2.5,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 212,
+      "manifest_sha256": "400a097df05a5358f3e473d0a8a7f0f8c8b7eab52196eb11ae67d5175d60f99e"
+    },
+    {
+      "name": "taper_20mm",
+      "rationale": "Raised-cosine boundary taper increased from 16 to 20 mm",
+      "config": {
+        "stride": 4,
+        "padding": 6,
+        "boundary_taper_width_voxels": 5.0,
+        "displacement_smoothing_sigma_voxels": 2.5,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 214,
+      "manifest_sha256": "f29855a27c466579ca7ed5261b2eedca0450d57fea594e0a4b5b771792300db7"
+    },
+    {
+      "name": "padding_16mm",
+      "rationale": "Periodic-grid zero padding reduced from 24 to 16 mm",
+      "config": {
+        "stride": 4,
+        "padding": 4,
+        "boundary_taper_width_voxels": 4.0,
+        "displacement_smoothing_sigma_voxels": 2.5,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 214,
+      "manifest_sha256": "3b00d9d447c124b9caf67c337db15fa9bc3e22b7c94aaf387dc20cac15d35aec"
+    },
+    {
+      "name": "padding_32mm",
+      "rationale": "Periodic-grid zero padding increased from 24 to 32 mm",
+      "config": {
+        "stride": 4,
+        "padding": 8,
+        "boundary_taper_width_voxels": 4.0,
+        "displacement_smoothing_sigma_voxels": 2.5,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 214,
+      "manifest_sha256": "e0fbc481b7072e2edd06f2c44ac28aee9f1e21ff053aa6cf8353e534ce95d74b"
+    },
+    {
+      "name": "grid_3mm",
+      "rationale": "Analysis grid reduced from 4 to 3 mm while preserving physical regularization",
+      "config": {
+        "stride": 3,
+        "padding": 8,
+        "boundary_taper_width_voxels": 5.333333333333333,
+        "displacement_smoothing_sigma_voxels": 3.3333333333333335,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 214,
+      "manifest_sha256": "194e617edc63a1faa82d7e46d9628f490591062992f059646c4c4387473406a3"
+    },
+    {
+      "name": "grid_5mm",
+      "rationale": "Analysis grid increased from 4 to 5 mm while preserving physical regularization",
+      "config": {
+        "stride": 5,
+        "padding": 5,
+        "boundary_taper_width_voxels": 3.2,
+        "displacement_smoothing_sigma_voxels": 2.0,
+        "velocity_squaring_steps": 6,
+        "velocity_maximum_iterations": 6,
+        "velocity_reconstruction_tolerance": 0.02
+      },
+      "qc_pass_cases": 213,
+      "manifest_sha256": "1a899f1d2f644bc1969a586c393e89a48ed3845d547d46de6db65412fc98f755"
+    }
+  ],
+  "feature_summary": {
+    "total_rms_mm": {
+      "minimum_spearman_vs_primary": 0.9909747003568513,
+      "maximum_median_absolute_difference": 0.4614840309913093,
+      "minimum_variant_spearman_vs_aq": 0.014244236346310196,
+      "maximum_variant_spearman_vs_aq": 0.12243714548679444
+    },
+    "curl_free_energy_fraction": {
+      "minimum_spearman_vs_primary": 0.9937555766587962,
+      "maximum_median_absolute_difference": 0.004117970934485071,
+      "minimum_variant_spearman_vs_aq": -0.2630002474808219,
+      "maximum_variant_spearman_vs_aq": -0.21975839762898994
+    },
+    "divergence_free_energy_fraction": {
+      "minimum_spearman_vs_primary": 0.9936479883862048,
+      "maximum_median_absolute_difference": 0.006677161680439636,
+      "minimum_variant_spearman_vs_aq": 0.14928099156066066,
+      "maximum_variant_spearman_vs_aq": 0.20552078814978506
+    }
+  }
+}

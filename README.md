@@ -10,8 +10,11 @@ Aphasia Quotient (WAB-AQ).
 The result is conservative. In 210 QC-passing participants, adding displacement
 features to a conventional lesion model changed held-out MAE by 0.38 AQ points
 (95% participant-bootstrap CI −0.50 to 1.17). Log-velocity Hodge features did
-not improve prediction after lesion or displacement features. The analysis does
-not estimate pressure, physical tissue velocity, force, or causal mass effect.
+not improve prediction after lesion or displacement features. Hodge descriptor
+ranks were stable across eight smoothing, taper, padding, and grid perturbations,
+but adjusted component--AQ associations did not survive multiplicity correction.
+The analysis does not estimate pressure, physical tissue velocity, force, or
+causal mass effect.
 
 ## Repository scope
 
@@ -61,6 +64,8 @@ Individual stages are also available:
 ```bash
 arc-deformation audit --config config/local.toml
 arc-deformation hodge --config config/local.toml
+arc-deformation hodge-sensitivity --config config/local.toml \
+  --primary-hodge-manifest results/runs/hodge/hodge_manifest.csv
 arc-deformation model --config config/local.toml \
   --hodge-manifest results/runs/hodge/hodge_manifest.csv
 arc-deformation report \
@@ -83,6 +88,8 @@ and JSON outputs, then builds:
 
 - `paper/main.pdf`;
 - `paper/supplement.pdf`;
+- `paper/submission.pdf` (combined manuscript and supplement for first
+  submission);
 - `paper/cover_letter.pdf`.
 
 The final author list, funding, and competing-interest declaration are factual
@@ -103,8 +110,9 @@ and boundary conditions that ARC does not provide.
 
 The frozen analysis used 20 repetitions of five-fold outer CV, four-fold inner
 CV, ridge penalties selected entirely within training folds, 5,000 participant
-bootstrap resamples, and seed 2026. Input SHA-256 values and result provenance
-are in `docs/RESULTS_PROVENANCE.md`.
+bootstrap resamples, 5,000 residual permutations for adjusted associations,
+eight one-factor Hodge perturbations, and seed 2026. Input SHA-256 values and
+result provenance are in `docs/RESULTS_PROVENANCE.md`.
 
 Raw images, NIfTI derivatives, joined clinical/design tables, per-participant
 Hodge descriptors, coefficients by fold, and out-of-fold predictions are

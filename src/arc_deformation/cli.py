@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ from arc_deformation.hodge import HodgeConfig, run_hodge_extraction
 from arc_deformation.io import ensure_output_outside_data
 from arc_deformation.modeling import ModelConfig, run_modeling
 from arc_deformation.reporting import generate_report
+from arc_deformation.robustness import run_hodge_sensitivity
 
 
 def _path(value: str | None) -> Path | None:
@@ -75,6 +77,18 @@ def build_parser() -> argparse.ArgumentParser:
     hodge.add_argument("--velocity-maximum-iterations", type=int)
     hodge.add_argument("--velocity-reconstruction-tolerance", type=float)
     hodge.add_argument("--n-jobs", type=int)
+
+    sensitivity = subparsers.add_parser(
+        "hodge-sensitivity",
+        help="Test Hodge descriptors across fixed numerical perturbations",
+    )
+    sensitivity.add_argument("--config", type=Path)
+    sensitivity.add_argument("--arc-root", type=Path)
+    sensitivity.add_argument("--mass-effect-manifest", type=Path)
+    sensitivity.add_argument("--clinical-table", type=Path)
+    sensitivity.add_argument("--primary-hodge-manifest", type=Path)
+    sensitivity.add_argument("--output-dir", type=Path)
+    sensitivity.add_argument("--n-jobs", type=int)
 
     report = subparsers.add_parser("report", help="Generate aggregate manuscript assets")
     report.add_argument("--results-dir", type=Path, required=True)
@@ -243,6 +257,33 @@ def _hodge_from_args(args: argparse.Namespace, config: dict[str, Any]) -> Path:
     return run_hodge_extraction(mass, arc_root, output, hodge_config, n_jobs)
 
 
+def _hodge_sensitivity_from_args(args: argparse.Namespace, config: dict[str, Any]) -> Path:
+    arc_root = _required_path(_resolve(args.arc_root, config, "paths", "arc_root"), "arc_root")
+    mass = _required_path(
+        _resolve(args.mass_effect_manifest, config, "paths", "mass_effect_manifest"),
+        "mass_effect_manifest",
+    )
+    clinical = _required_path(
+        _resolve(args.clinical_table, config, "paths", "clinical_table"),
+        "clinical_table",
+    )
+    primary = _required_path(
+        _resolve(args.primary_hodge_manifest, config, "paths", "hodge_manifest"),
+        "primary_hodge_manifest",
+    )
+    output_value = _resolve(args.output_dir, config, "paths", "output_root")
+    output = _required_path(output_value, "output_dir")
+    if args.output_dir is None and config_value(config, "paths", "output_root"):
+        output = output / "hodge_sensitivity"
+    output = ensure_output_outside_data(output, arc_root)
+    n_jobs = int(
+        args.n_jobs
+        if args.n_jobs is not None
+        else config_value(config, "sensitivity", "n_jobs", 1)
+    )
+    return run_hodge_sensitivity(mass, clinical, primary, arc_root, output, n_jobs)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "report":
@@ -285,6 +326,10 @@ def main(argv: list[str] | None = None) -> int:
         manifest = _hodge_from_args(args, _load_optional(args.config))
         print(manifest)
         return 0
+    if args.command == "hodge-sensitivity":
+        output = _hodge_sensitivity_from_args(args, _load_optional(args.config))
+        print(output)
+        return 0
     if args.command == "reproduce":
         config = load_config(args.config)
         arc_root = _required_path(config_value(config, "paths", "arc_root"), "arc_root")
@@ -315,6 +360,15 @@ def main(argv: list[str] | None = None) -> int:
             n_jobs=None,
         )
         hodge_manifest = _hodge_from_args(hodge_namespace, config)
+        sensitivity_namespace = argparse.Namespace(
+            arc_root=None,
+            mass_effect_manifest=None,
+            clinical_table=None,
+            primary_hodge_manifest=hodge_manifest,
+            output_dir=None,
+            n_jobs=None,
+        )
+        sensitivity_table = _hodge_sensitivity_from_args(sensitivity_namespace, config)
         model_namespace = argparse.Namespace(
             mass_effect_manifest=None,
             clinical_table=None,
@@ -330,6 +384,14 @@ def main(argv: list[str] | None = None) -> int:
             n_jobs=None,
         )
         model_output = _model_from_args(model_namespace, config)
+        shutil.copy2(
+            sensitivity_table,
+            model_output / "hodge_parameter_sensitivity.csv",
+        )
+        shutil.copy2(
+            sensitivity_table.with_suffix(".json"),
+            model_output / "hodge_parameter_sensitivity.json",
+        )
         generate_report(model_output, output_root / "paper_assets")
         print(output_root)
         return 0
