@@ -4,6 +4,11 @@
   "analysis_subjects": 210,
   "left_dominant": 209,
   "right_dominant": 1,
+  "reported_sex": {
+    "female": 82,
+    "male": 128,
+    "other_or_missing": 0
+  },
   "age_at_stroke": {
     "n": 210,
     "median": 58.5,
@@ -73,5 +78,52 @@
     "q1": 0.9988658256739897,
     "q3": 1.7066714897879922,
     "digits": 2
+  },
+  "log_velocity_hodge": {
+    "extraction_cases": 214,
+    "extraction_qc_pass_cases": 214,
+    "total_rms_mm": {
+      "n": 210,
+      "median": 2.1552877575482867,
+      "q1": 1.7833472565462767,
+      "q3": 2.6549995896881606,
+      "digits": 2
+    },
+    "curl_free_energy_fraction": {
+      "n": 210,
+      "median": 0.2839730840292348,
+      "q1": 0.2448963626094557,
+      "q3": 0.31886041071218424,
+      "digits": 3
+    },
+    "divergence_free_energy_fraction": {
+      "n": 210,
+      "median": 0.691925553815163,
+      "q1": 0.6588579823907601,
+      "q3": 0.7275354686651189,
+      "digits": 3
+    },
+    "harmonic_energy_fraction": {
+      "n": 210,
+      "median": 0.0257572685102292,
+      "q1": 0.016790668169408024,
+      "q3": 0.03314980533215292,
+      "digits": 3
+    },
+    "velocity_reconstruction_relative_rmse": {
+      "n": 210,
+      "median": 0.0114491173546993,
+      "q1": 0.009640821474815176,
+      "q3": 0.0147938938659274,
+      "digits": 3
+    },
+    "minimum_input_jacobian": {
+      "n": 210,
+      "median": 0.7610194385051727,
+      "q1": 0.6948206722736359,
+      "q3": 0.8062287718057632,
+      "digits": 3
+    },
+    "analysis_qc_pass_n": 210
   }
 }

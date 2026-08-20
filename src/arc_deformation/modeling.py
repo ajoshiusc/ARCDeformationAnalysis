@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.stats import wilcoxon
+from scipy.stats import spearmanr, wilcoxon
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -19,6 +19,8 @@ from sklearn.preprocessing import StandardScaler
 from arc_deformation.constants import (
     CLINICAL_FEATURES,
     DEFORMATION_FEATURES,
+    HODGE_FEATURES,
+    HODGE_METHOD_VERSION,
     LESION_FEATURES,
     METHOD_VERSION,
     REGISTRATION_QC_FEATURES,
@@ -49,6 +51,7 @@ class ModelConfig:
     maximum_folding_fraction: float = 0.05
     minimum_near_lesion_voxels: int = 1000
     minimum_uncertainty_coverage: float = 0.90
+    minimum_hodge_coverage: float = 0.90
     alpha_grid: tuple[float, ...] = field(
         default_factory=lambda: tuple(np.logspace(-4, 4, 17).tolist())
     )
@@ -59,8 +62,9 @@ def build_design(
     clinical: pd.DataFrame,
     uncertainty: pd.DataFrame | None,
     config: ModelConfig,
+    hodge: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, dict[str, object]]:
-    """Join inputs, enforce one case per participant, and apply prespecified QC."""
+    """Join inputs, enforce one case per participant, and apply fixed QC criteria."""
     if "participant_id" in clinical and "subject" not in clinical:
         clinical = clinical.rename(columns={"participant_id": "subject"})
     require_unique(mass, "case_id", "mass-effect manifest")
@@ -117,6 +121,39 @@ def build_design(
             design = design.merge(payload, on="case_id", how="inner", validate="one_to_one")
             uncertainty_used = True
 
+    hodge_used = False
+    hodge_coverage = 0.0
+    hodge_rows = 0
+    hodge_qc_pass_rows = 0
+    if hodge is not None:
+        require_unique(hodge, "case_id", "Hodge manifest")
+        hodge_rows = len(hodge)
+        required_hodge = {"hodge_method_version", "velocity_qc_pass"}
+        missing_hodge = sorted(required_hodge - set(hodge.columns))
+        if missing_hodge:
+            raise ValueError(f"Hodge manifest lacks provenance/QC: {missing_hodge}")
+        hodge_versions = sorted(
+            hodge["hodge_method_version"].dropna().astype(str).str.strip().unique()
+        )
+        if hodge_versions != [HODGE_METHOD_VERSION]:
+            raise ValueError(
+                f"Expected Hodge method {HODGE_METHOD_VERSION!r}, found {hodge_versions!r}"
+            )
+        hodge = hodge.loc[truthy(hodge["velocity_qc_pass"])].copy()
+        hodge_qc_pass_rows = len(hodge)
+        hodge_coverage = float(design["case_id"].isin(hodge["case_id"]).mean())
+        if hodge_coverage >= config.minimum_hodge_coverage:
+            payload = prefix_nonkeys(hodge, "hhd_").drop(
+                columns=["subject", "session"], errors="ignore"
+            )
+            design = design.merge(payload, on="case_id", how="inner", validate="one_to_one")
+            hodge_used = True
+        else:
+            raise ValueError(
+                "Too few QC-passing log-velocity/Hodge cases: "
+                f"coverage={hodge_coverage:.3f}, required={config.minimum_hodge_coverage:.3f}"
+            )
+
     design[config.outcome] = pd.to_numeric(design[config.outcome], errors="coerce")
     design["age_at_stroke"] = pd.to_numeric(design["age_at_stroke"], errors="coerce")
     wab_days = pd.to_numeric(design["wab_days"], errors="coerce")
@@ -135,16 +172,23 @@ def build_design(
         "rows_after_deformation_qc": qc_rows,
         "uncertainty_coverage_before_matching": uncertainty_coverage,
         "uncertainty_models_used": uncertainty_used,
+        "hodge_coverage_before_matching": hodge_coverage,
+        "hodge_models_used": hodge_used,
+        "hodge_manifest_rows": hodge_rows,
+        "hodge_qc_pass_rows": hodge_qc_pass_rows,
         "analysis_subjects": len(design),
     }
     return design, audit
 
 
 def model_feature_sets(
-    design: pd.DataFrame, uncertainty_used: bool
+    design: pd.DataFrame,
+    uncertainty_used: bool,
+    hodge_used: bool = False,
 ) -> dict[str, tuple[str, ...]]:
     standard = CLINICAL_FEATURES + LESION_FEATURES
     sets: dict[str, tuple[str, ...]] = {
+        "intercept_only": (),
         "clinical_only": CLINICAL_FEATURES,
         "lesion_standard": standard,
         "lesion_plus_mass_effect": standard + DEFORMATION_FEATURES,
@@ -159,6 +203,11 @@ def model_feature_sets(
         uncertainty_set = standard + UNCERTAINTY_FEATURES
         sets["lesion_plus_uncertainty"] = uncertainty_set
         sets["lesion_uncertainty_plus_mass_effect"] = uncertainty_set + DEFORMATION_FEATURES
+    if hodge_used:
+        sets["lesion_plus_hodge"] = standard + HODGE_FEATURES
+        sets["lesion_plus_mass_effect_plus_hodge"] = (
+            standard + DEFORMATION_FEATURES + HODGE_FEATURES
+        )
     for model, features in sets.items():
         missing = [feature for feature in features if feature not in design]
         empty = [
@@ -180,6 +229,10 @@ def _validate_config(config: ModelConfig, n: int) -> None:
         raise ValueError("Need inner_folds >= 2, repeats >= 1, bootstrap_samples >= 100")
     if not 0 <= config.maximum_folding_fraction <= 1:
         raise ValueError("maximum_folding_fraction must be in [0, 1]")
+    if not 0 <= config.minimum_uncertainty_coverage <= 1:
+        raise ValueError("minimum_uncertainty_coverage must be in [0, 1]")
+    if not 0 <= config.minimum_hodge_coverage <= 1:
+        raise ValueError("minimum_hodge_coverage must be in [0, 1]")
     if any(not np.isfinite(alpha) or alpha <= 0 for alpha in config.alpha_grid):
         raise ValueError("Every ridge alpha must be positive and finite")
 
@@ -212,11 +265,20 @@ def repeated_nested_cv(
             )
         )
         for model, features in feature_sets.items():
-            x = design[list(features)].apply(pd.to_numeric, errors="coerce").to_numpy(float)
+            x = (
+                design[list(features)].apply(pd.to_numeric, errors="coerce").to_numpy(float)
+                if features
+                else np.empty((n, 0), dtype=float)
+            )
             predicted = np.full(n, np.nan)
             folds = np.full(n, -1, dtype=int)
             chosen_alpha = np.full(n, np.nan)
             for fold_number, (train, test) in enumerate(outer, start=1):
+                if not features:
+                    predicted[test] = float(np.mean(y[train]))
+                    chosen_alpha[test] = 0.0
+                    folds[test] = fold_number
+                    continue
                 pipeline = Pipeline(
                     [
                         ("imputer", SimpleImputer(strategy="median")),
@@ -335,7 +397,17 @@ def paired_comparisons(
         raise ValueError(f"Reference model {reference!r} is unavailable")
     rng = np.random.default_rng(seed)
     rows: list[dict[str, object]] = []
-    for model in errors.columns:
+    legacy_order = (
+        "clinical_only",
+        "lesion_plus_mass_effect",
+        "lesion_plus_mass_effect_and_registration_qc",
+        "lesion_plus_uncertainty",
+        "lesion_standard",
+        "lesion_uncertainty_plus_mass_effect",
+    )
+    ordered_models = [model for model in legacy_order if model in errors.columns]
+    ordered_models.extend(model for model in errors.columns if model not in set(ordered_models))
+    for model in ordered_models:
         if model == reference:
             continue
         pair = errors[[reference, model]].dropna()
@@ -368,6 +440,131 @@ def paired_comparisons(
     return result
 
 
+def bootstrap_model_mae(
+    predictions: pd.DataFrame, bootstrap_samples: int, seed: int
+) -> pd.DataFrame:
+    """Participant-bootstrap intervals for repeat-averaged absolute error."""
+    errors = predictions.groupby(["subject", "model"], as_index=False)["absolute_error"].mean()
+    order = predictions["model"].drop_duplicates().tolist()
+    rng = np.random.default_rng(seed)
+    rows: list[dict[str, object]] = []
+    for model in order:
+        values = errors.loc[errors["model"].eq(model), "absolute_error"].to_numpy(float)
+        indices = rng.integers(0, len(values), size=(bootstrap_samples, len(values)))
+        bootstrap = values[indices].mean(axis=1)
+        q1, median, q3 = np.percentile(values, [25, 50, 75])
+        lower, upper = np.percentile(bootstrap, [2.5, 97.5])
+        rows.append(
+            {
+                "model": model,
+                "n_subjects": len(values),
+                "mean_absolute_error": float(np.mean(values)),
+                "bootstrap_ci025": float(lower),
+                "bootstrap_ci975": float(upper),
+                "median_subject_absolute_error": float(median),
+                "subject_absolute_error_q25": float(q1),
+                "subject_absolute_error_q75": float(q3),
+                "bootstrap_samples": bootstrap_samples,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def deformation_associations(
+    design: pd.DataFrame, outcome: str, bootstrap_samples: int, seed: int
+) -> pd.DataFrame:
+    """Multiplicity-controlled descriptive Spearman associations."""
+    specifications = (
+        (
+            "lesion_volume_vs_aq",
+            "lesion_volume_ml",
+            outcome,
+        ),
+        (
+            "magnitude_vs_lesion_volume",
+            "me_mass_effect_3_20mm_magnitude_mm_median",
+            "lesion_volume_ml",
+        ),
+        (
+            "absolute_radial_vs_lesion_volume",
+            "me_mass_effect_3_20mm_mean_absolute_radial_mm",
+            "lesion_volume_ml",
+        ),
+        (
+            "magnitude_vs_registration_sensitivity",
+            "me_mass_effect_3_20mm_magnitude_mm_median",
+            "me_registration_sensitivity_3_20mm_mm_median",
+        ),
+        (
+            "absolute_radial_vs_registration_sensitivity",
+            "me_mass_effect_3_20mm_mean_absolute_radial_mm",
+            "me_registration_sensitivity_3_20mm_mm_median",
+        ),
+        (
+            "magnitude_vs_aq",
+            "me_mass_effect_3_20mm_magnitude_mm_median",
+            outcome,
+        ),
+        (
+            "absolute_radial_vs_aq",
+            "me_mass_effect_3_20mm_mean_absolute_radial_mm",
+            outcome,
+        ),
+        (
+            "radial_direction_vs_aq",
+            "me_mass_effect_3_20mm_radial_mm_median",
+            outcome,
+        ),
+    )
+    if all(feature in design for feature in HODGE_FEATURES):
+        specifications += (
+            (
+                "hodge_total_rms_vs_lesion_volume",
+                "hhd_total_rms_mm",
+                "lesion_volume_ml",
+            ),
+            ("hodge_total_rms_vs_aq", "hhd_total_rms_mm", outcome),
+            (
+                "hodge_curl_free_fraction_vs_aq",
+                "hhd_curl_free_energy_fraction",
+                outcome,
+            ),
+            (
+                "hodge_divergence_free_fraction_vs_aq",
+                "hhd_divergence_free_energy_fraction",
+                outcome,
+            ),
+        )
+    rng = np.random.default_rng(seed)
+    rows: list[dict[str, object]] = []
+    for name, first, second in specifications:
+        pair = design[[first, second]].apply(pd.to_numeric, errors="coerce").dropna()
+        x = pair[first].to_numpy(float)
+        y = pair[second].to_numpy(float)
+        observed = spearmanr(x, y)
+        bootstrap = np.empty(bootstrap_samples, dtype=float)
+        for index in range(bootstrap_samples):
+            sample = rng.integers(0, len(pair), size=len(pair))
+            bootstrap[index] = float(spearmanr(x[sample], y[sample]).statistic)
+        lower, upper = np.percentile(bootstrap[np.isfinite(bootstrap)], [2.5, 97.5])
+        rows.append(
+            {
+                "association": name,
+                "first_variable": first,
+                "second_variable": second,
+                "n_subjects": len(pair),
+                "spearman_rho": float(observed.statistic),
+                "bootstrap_ci025": float(lower),
+                "bootstrap_ci975": float(upper),
+                "p_value": float(observed.pvalue),
+                "bootstrap_samples": bootstrap_samples,
+            }
+        )
+    result = pd.DataFrame(rows)
+    result["p_value_holm"] = holm_adjust(result["p_value"].to_numpy(float))
+    return result
+
+
 def aggregate_cohort_summary(
     design: pd.DataFrame, audit: dict[str, object]
 ) -> dict[str, object]:
@@ -385,15 +582,21 @@ def aggregate_cohort_summary(
         }
 
     side = design["me_lesion_side"].value_counts()
+    sex = design["sex"].astype(str).value_counts() if "sex" in design else pd.Series(dtype=int)
     folding = quantiles("me_normalized_field_folding_fraction", 2)
     for key in ("median", "q1", "q3"):
         folding[key] = 100 * float(folding[key])
-    return {
+    summary: dict[str, object] = {
         "manifest_cases": int(audit["mass_effect_rows"]),
         "clinical_matches": int(audit["mass_effect_clinical_matches"]),
         "analysis_subjects": len(design),
         "left_dominant": int(side.get("left", 0)),
         "right_dominant": int(side.get("right", 0)),
+        "reported_sex": {
+            "female": int(sex.get("F", 0)),
+            "male": int(sex.get("M", 0)),
+            "other_or_missing": int(len(design) - sex.get("F", 0) - sex.get("M", 0)),
+        },
         "age_at_stroke": quantiles("age_at_stroke", 1),
         "wab_days": quantiles("wab_days", 0),
         "wab_aq": quantiles("wab_aq", 1),
@@ -411,6 +614,23 @@ def aggregate_cohort_summary(
             "me_mass_effect_to_registration_sensitivity_ratio", 2
         ),
     }
+    if all(column in design for column in HODGE_FEATURES):
+        summary["log_velocity_hodge"] = {
+            "extraction_cases": int(audit["hodge_manifest_rows"]),
+            "extraction_qc_pass_cases": int(audit["hodge_qc_pass_rows"]),
+            "total_rms_mm": quantiles("hhd_total_rms_mm", 2),
+            "curl_free_energy_fraction": quantiles("hhd_curl_free_energy_fraction", 3),
+            "divergence_free_energy_fraction": quantiles(
+                "hhd_divergence_free_energy_fraction", 3
+            ),
+            "harmonic_energy_fraction": quantiles("hhd_harmonic_energy_fraction", 3),
+            "velocity_reconstruction_relative_rmse": quantiles(
+                "hhd_velocity_reconstruction_relative_rmse", 3
+            ),
+            "minimum_input_jacobian": quantiles("hhd_displacement_minimum_jacobian", 3),
+            "analysis_qc_pass_n": int(truthy(design["hhd_velocity_qc_pass"]).sum()),
+        }
+    return summary
 
 
 def run_modeling(
@@ -419,6 +639,7 @@ def run_modeling(
     output_dir: Path,
     uncertainty_manifest: Path | None = None,
     config: ModelConfig | None = None,
+    hodge_manifest: Path | None = None,
 ) -> dict[str, object]:
     """Run the complete model comparison and write machine-readable outputs."""
     config = config or ModelConfig()
@@ -427,8 +648,13 @@ def run_modeling(
     mass = read_table(mass_effect_manifest)
     clinical = read_table(clinical_table)
     uncertainty = read_table(uncertainty_manifest) if uncertainty_manifest else None
-    design, audit = build_design(mass, clinical, uncertainty, config)
-    features = model_feature_sets(design, bool(audit["uncertainty_models_used"]))
+    hodge = read_table(hodge_manifest) if hodge_manifest else None
+    design, audit = build_design(mass, clinical, uncertainty, config, hodge)
+    features = model_feature_sets(
+        design,
+        bool(audit["uncertainty_models_used"]),
+        bool(audit["hodge_models_used"]),
+    )
     predictions, metrics, coefficients = repeated_nested_cv(design, features, config)
     summary = summarize_metrics(metrics)
     comparisons = paired_comparisons(
@@ -437,6 +663,7 @@ def run_modeling(
         config.bootstrap_samples,
         config.seed + 99991,
     )
+    comparisons["comparison_context"] = "versus_lesion_standard"
     if {
         "lesion_plus_uncertainty",
         "lesion_uncertainty_plus_mass_effect",
@@ -451,7 +678,65 @@ def run_modeling(
             direct["comparison_model"].eq("lesion_uncertainty_plus_mass_effect")
         ].copy()
         direct["p_value_holm"] = direct["p_value"]
+        direct["comparison_context"] = "deformation_after_uncertainty"
         comparisons = pd.concat([comparisons, direct], ignore_index=True)
+    if "lesion_plus_mass_effect_plus_hodge" in features:
+        direct_hodge = paired_comparisons(
+            predictions,
+            "lesion_plus_mass_effect",
+            config.bootstrap_samples,
+            config.seed + 299973,
+        )
+        direct_hodge = direct_hodge.loc[
+            direct_hodge["comparison_model"].eq("lesion_plus_mass_effect_plus_hodge")
+        ].copy()
+        direct_hodge["p_value_holm"] = direct_hodge["p_value"]
+        direct_hodge["comparison_context"] = "hodge_after_deformation"
+        comparisons = pd.concat([comparisons, direct_hodge], ignore_index=True)
+
+    mae_inference = bootstrap_model_mae(
+        predictions, config.bootstrap_samples, config.seed + 399964
+    )
+    associations = deformation_associations(
+        design, config.outcome, config.bootstrap_samples, config.seed + 499955
+    )
+
+    left_design = design.loc[design["me_lesion_side"].eq("left")].reset_index(drop=True)
+    sensitivity_models = {
+        name: values
+        for name, values in features.items()
+        if name
+        in {
+            "lesion_standard",
+            "lesion_plus_mass_effect",
+            "lesion_plus_hodge",
+            "lesion_plus_mass_effect_plus_hodge",
+        }
+    }
+    left_predictions, left_metrics, _ = repeated_nested_cv(
+        left_design, sensitivity_models, config
+    )
+    left_summary = summarize_metrics(left_metrics)
+    left_comparisons = paired_comparisons(
+        left_predictions,
+        "lesion_standard",
+        config.bootstrap_samples,
+        config.seed + 599946,
+    )
+    left_comparisons["comparison_context"] = "left_lesion_only"
+    if "lesion_plus_mass_effect_plus_hodge" in sensitivity_models:
+        left_direct_hodge = paired_comparisons(
+            left_predictions,
+            "lesion_plus_mass_effect",
+            config.bootstrap_samples,
+            config.seed + 699937,
+        )
+        left_direct_hodge = left_direct_hodge.loc[
+            left_direct_hodge["comparison_model"].eq("lesion_plus_mass_effect_plus_hodge")
+        ].copy()
+        left_direct_hodge["p_value_holm"] = left_direct_hodge["p_value"]
+        left_direct_hodge["comparison_context"] = "left_only_hodge_after_deformation"
+        left_comparisons = pd.concat([left_comparisons, left_direct_hodge], ignore_index=True)
 
     coefficient_summary = (
         coefficients.groupby(["model", "feature"])["standardized_coefficient"]
@@ -463,6 +748,11 @@ def run_modeling(
     atomic_csv(output_dir / "metrics_by_repeat.csv", metrics)
     atomic_csv(output_dir / "model_summary.csv", summary)
     atomic_csv(output_dir / "paired_comparisons.csv", comparisons)
+    atomic_csv(output_dir / "model_mae_inference.csv", mae_inference)
+    atomic_csv(output_dir / "deformation_associations.csv", associations)
+    atomic_csv(output_dir / "left_only_metrics_by_repeat.csv", left_metrics)
+    atomic_csv(output_dir / "left_only_model_summary.csv", left_summary)
+    atomic_csv(output_dir / "left_only_paired_comparisons.csv", left_comparisons)
     atomic_csv(output_dir / "coefficients.csv", coefficients)
     atomic_csv(output_dir / "coefficient_summary.csv", coefficient_summary)
     atomic_json(output_dir / "cohort_summary.json", aggregate_cohort_summary(design, audit))
@@ -481,12 +771,25 @@ def run_modeling(
             "uncertainty_manifest_sha256": sha256_file(uncertainty_manifest)
             if uncertainty_manifest
             else None,
+            "hodge_manifest": str(Path(hodge_manifest).resolve()) if hodge_manifest else None,
+            "hodge_manifest_sha256": sha256_file(hodge_manifest) if hodge_manifest else None,
         },
         "primary_estimand": (
             "participant mean absolute-error advantage: lesion_standard minus "
             "lesion_plus_mass_effect, averaged across repeats"
         ),
         "superiority_rule": "primary participant-bootstrap CI must exclude zero",
+        "secondary_analyses": {
+            "hodge": (
+                "Stationary log-velocity of a regularized displacement embedding, "
+                "followed by periodic-grid Helmholtz--Hodge decomposition; a "
+                "registration parameter, not physical velocity or pressure"
+            ),
+            "left_lesion_only_subjects": len(left_design),
+            "descriptive_association_multiplicity": (
+                f"Holm adjustment across {len(associations)} tests"
+            ),
+        },
         "interpretation_warning": (
             "Cross-sectional lesion-associated deformation proxy; not physical ground-truth "
             "mass effect or pressure."

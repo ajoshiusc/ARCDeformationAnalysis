@@ -2,30 +2,36 @@ PYTHON ?= python
 CONFIG ?= config/local.toml
 REFERENCE := results/reference
 
-.PHONY: install test lint audit reproduce report paper clean-paper
+.PHONY: install test lint audit reproduce report paper submission clean-paper
 
 install:
 	$(PYTHON) -m pip install -e '.[dev]'
 
 test:
-	$(PYTHON) -m pytest
+	PYTHONPATH=src $(PYTHON) -m pytest
 
 lint:
 	$(PYTHON) -m ruff check src tests
 
 audit:
-	$(PYTHON) -m arc_deformation audit --config $(CONFIG)
+	PYTHONPATH=src $(PYTHON) -m arc_deformation audit --config $(CONFIG)
 
 reproduce:
-	$(PYTHON) -m arc_deformation reproduce --config $(CONFIG)
+	PYTHONPATH=src $(PYTHON) -m arc_deformation reproduce --config $(CONFIG)
 
 report:
-	$(PYTHON) -m arc_deformation report \
+	PYTHONPATH=src $(PYTHON) -m arc_deformation report \
 		--results-dir $(REFERENCE) \
 		--output-dir paper/generated
 
 paper: report
 	latexmk -pdf -interaction=nonstopmode -halt-on-error -cd paper/main.tex
 
+submission: paper
+	latexmk -pdf -interaction=nonstopmode -halt-on-error -cd paper/supplement.tex
+	latexmk -pdf -interaction=nonstopmode -halt-on-error -cd paper/cover_letter.tex
+
 clean-paper:
 	latexmk -C -cd paper/main.tex
+	latexmk -C -cd paper/supplement.tex
+	latexmk -C -cd paper/cover_letter.tex

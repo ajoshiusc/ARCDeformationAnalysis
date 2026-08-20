@@ -1,0 +1,72 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+
+\begin{document}
+
+\begin{flushright}
+Signal and Image Processing Institute\\
+Ming Hsieh Department of Electrical and Computer Engineering\\
+University of Southern California\\
+Los Angeles, California, USA\\
+\texttt{ajoshi@usc.edu}
+\end{flushright}
+
+Editors\\
+\emph{Imaging Neuroscience}
+
+Dear Editors,
+
+Please consider the Research Article ``Contralateral-Normalized Deformation and
+Stationary Log-Velocity Decomposition after Chronic Stroke: Geometric
+Characterization and Aphasia Prediction in the Aphasia Recovery Cohort'' for
+publication in \emph{Imaging Neuroscience}.
+
+This study addresses a recurring interpretive problem in lesion neuroimaging:
+registration fields near chronic lesions can be scientifically useful without
+being physical measurements of tissue displacement or pressure. We introduce a
+contralateral-normalized, lesional-only deformation proxy, construct a
+positive-Jacobian stationary log-velocity embedding, and apply an explicitly
+bounded Helmholtz--Hodge decomposition. Every log-domain case is audited by
+exponentiating the estimated velocity and comparing the reconstruction with its
+input deformation.
+
+The main scientific result is deliberately negative and useful. In 210
+participants from the openly available Aphasia Recovery Cohort, deformation
+features produced only a small and uncertain reduction in held-out Western
+Aphasia Battery Aphasia Quotient error. Hodge descriptors were descriptively
+associated with aphasia severity but did not improve nested cross-validated
+prediction beyond conventional lesion or displacement features. The manuscript
+distinguishes this geometric analysis from physical pressure inference and
+reports the numerical, registration-sensitivity, and statistical checks needed
+to support that boundary.
+
+The work fits \emph{Imaging Neuroscience} because it combines open human
+neuroimaging, deformable registration, reproducible computational methodology,
+and out-of-sample brain--behavior modeling. Code, tests, aggregate results, and
+LaTeX sources are publicly available in the
+\href{https://github.com/ajoshiusc/ARCDeformationAnalysis}{ARCDeformationAnalysis
+repository}; the source dataset is available from OpenNeuro.
+
+OpenAI Codex assisted with code refactoring, statistical implementation,
+reproducibility checks, and language editing. The author reviewed the analysis
+and accepts responsibility for the submitted code and text. The corresponding
+disclosure appears in the manuscript.
+
+Before submission, the author will confirm originality and exclusive
+consideration and supply the final funding and competing-interest declarations
+in the manuscript and submission system.
+
+Sincerely,
+
+\vspace{0.5em}
+Anand A. Joshi\\
+Signal and Image Processing Institute\\
+University of Southern California\\
+\texttt{ajoshi@usc.edu}
+
+\end{document}

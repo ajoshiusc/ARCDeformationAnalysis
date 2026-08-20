@@ -3,12 +3,13 @@
   "date": "2026-08-19",
   "recomputed_with_refactored_package": true,
   "analysis_subjects": 210,
-  "model_summary_common_columns_exact": true,
-  "metrics_by_repeat_common_columns_exact": true,
-  "paired_comparisons_common_columns_exact": true,
-  "maximum_numeric_delta": 0.0,
+  "hodge_input_cases": 214,
+  "hodge_qc_pass_cases": 214,
+  "legacy_model_summary_numeric_maximum_delta": 0.0,
+  "legacy_metrics_by_repeat_numeric_maximum_delta": 0.0,
+  "legacy_paired_comparison_nonmultiplicity_maximum_delta": 0.0,
   "maps_checked": 1070,
   "contralesional_nonzero_values": 0,
   "legacy_predictive_feature_maximum_delta": 0.0,
-  "notes": "The new paired-comparison table adds an explicit mean_advantage_ci_excludes_zero column; all ten legacy columns are identical."
+  "notes": "Legacy predictions, metrics, bootstrap intervals, Wilcoxon statistics, and raw p-values are exact. Holm-adjusted p-values were recomputed for the expanded model family. New outputs add an intercept benchmark, absolute-MAE intervals, log-velocity/Hodge models, 12 descriptive associations, and a left-lesion-only sensitivity analysis."
 }

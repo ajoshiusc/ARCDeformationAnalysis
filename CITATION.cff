@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, cite this repository and the ARC data descriptor."
 title: "ARC Deformation Analysis"
 type: software
-version: 1.0.0
+version: 1.1.0
 date-released: 2026-08-19
 license: GPL-2.0-only
 authors:
@@ -11,7 +11,7 @@ authors:
     email: ajoshi@usc.edu
 preferred-citation:
   type: article
-  title: "Contralateral-Normalized Deformation after Chronic Stroke: Cross-sectional Description and Aphasia Prediction in ARC"
+  title: "Contralateral-Normalized Deformation and Stationary Log-Velocity Decomposition after Chronic Stroke: Geometric Characterization and Aphasia Prediction in the Aphasia Recovery Cohort"
   authors:
     - family-names: Joshi
       given-names: Anand A.

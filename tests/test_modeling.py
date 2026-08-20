@@ -3,10 +3,16 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from arc_deformation.constants import CLINICAL_FEATURES, DEFORMATION_FEATURES, LESION_FEATURES
+from arc_deformation.constants import (
+    CLINICAL_FEATURES,
+    DEFORMATION_FEATURES,
+    HODGE_FEATURES,
+    LESION_FEATURES,
+)
 from arc_deformation.modeling import (
     ModelConfig,
     holm_adjust,
+    model_feature_sets,
     paired_comparisons,
     repeated_nested_cv,
 )
@@ -54,6 +60,40 @@ def test_repeated_nested_cv_is_complete_and_deterministic() -> None:
     assert len(metrics) == 4
     assert first["predicted_aq"].notna().all()
     np.testing.assert_allclose(first["predicted_aq"], second["predicted_aq"])
+
+
+def test_intercept_only_benchmark_uses_training_fold_mean() -> None:
+    design = _synthetic_design()
+    config = ModelConfig(
+        outer_folds=3,
+        inner_folds=2,
+        repeats=1,
+        bootstrap_samples=100,
+        seed=19,
+        alpha_grid=(1.0,),
+    )
+    predictions, metrics, coefficients = repeated_nested_cv(
+        design, {"intercept_only": ()}, config
+    )
+    observed = design.set_index("subject")["wab_aq"]
+    for fold, group in predictions.groupby("outer_fold"):
+        held_out = set(group["subject"])
+        expected = observed.loc[~observed.index.isin(held_out)].mean()
+        np.testing.assert_allclose(group["predicted_aq"], expected)
+        assert fold in {1, 2, 3}
+    assert len(metrics) == 1
+    assert coefficients.empty
+
+
+def test_hodge_feature_sets_are_incremental() -> None:
+    design = _synthetic_design()
+    for feature in HODGE_FEATURES:
+        design[feature] = np.linspace(0.1, 0.9, len(design))
+    sets = model_feature_sets(design, uncertainty_used=False, hodge_used=True)
+    assert sets["lesion_plus_hodge"] == (CLINICAL_FEATURES + LESION_FEATURES + HODGE_FEATURES)
+    assert sets["lesion_plus_mass_effect_plus_hodge"] == (
+        CLINICAL_FEATURES + LESION_FEATURES + DEFORMATION_FEATURES + HODGE_FEATURES
+    )
 
 
 def test_paired_comparison_reports_mean_interval_estimand() -> None:

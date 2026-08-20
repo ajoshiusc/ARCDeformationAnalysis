@@ -1,0 +1,5 @@
+reference_model,comparison_model,n_subjects,mean_mae_advantage_points,bootstrap_ci025,bootstrap_ci975,mean_advantage_ci_excludes_zero,subjects_improved_fraction,wilcoxon_statistic,p_value,p_value_holm,comparison_context
+lesion_standard,lesion_plus_mass_effect,209,0.3275954621328158,-0.5089586069965855,1.087348191540686,False,0.583732057416268,8943.0,0.020422807957896184,0.061268423873688554,left_lesion_only
+lesion_standard,lesion_plus_hodge,209,-0.02116102016985845,-0.34533641945268434,0.29512790171057485,False,0.5311004784688995,10551.0,0.6301477033074672,0.6301477033074672,left_lesion_only
+lesion_standard,lesion_plus_mass_effect_plus_hodge,209,0.3005143029100321,-0.5662941534784142,1.1147255834654723,False,0.5885167464114832,9268.0,0.05150954541806364,0.10301909083612729,left_lesion_only
+lesion_plus_mass_effect,lesion_plus_mass_effect_plus_hodge,209,-0.02708115922278393,-0.2903275267378325,0.23260322122483956,False,0.507177033492823,10918.0,0.9503554161460649,0.9503554161460649,left_only_hodge_after_deformation

@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
+\input{generated/results.tex}
+
+\title{Supplementary Material: Contralateral-Normalized Deformation and
+Stationary Log-Velocity Decomposition after Chronic Stroke}
+\author{Anand A. Joshi}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Complete predictive-model results}
+
+Table~S1 reports every evaluated and sensitivity feature family. MAE
+intervals were obtained by resampling participants after averaging each
+participant's absolute error across 20 complete outer-CV repetitions. Intervals
+across repeated splits are not treated as inferential confidence intervals.
+
+\begin{table}[ht]
+\centering
+\caption{Performance of all prediction models on the common
+\AnalysisN-participant cohort.}
+\label{tab:all-models}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/model_table_all.tex}}
+\end{table}
+
+The direct incremental mean MAE advantage of deformation after lesion
+uncertainty was \AfterUncertaintyAdvantage{} points (95\% participant-bootstrap
+interval \AfterUncertaintyCILow{} to \AfterUncertaintyCIHigh{}). The direct
+incremental advantage of log-velocity Hodge features after displacement
+features was \HodgeAfterDeformationAdvantage{} points
+(\HodgeAfterDeformationCILow{} to \HodgeAfterDeformationCIHigh{}).
+
+\section{Complete descriptive-association family}
+
+The 12 correlations in Table~S2 formed one descriptive multiplicity family.
+Intervals are participant-bootstrap 95\% intervals; $p$ values are Holm
+adjusted across all rows. These are bivariate descriptions, not covariate-adjusted
+effects or causal estimates.
+
+\begin{table}[ht]
+\centering
+\caption{Descriptive Spearman correlations.}
+\label{tab:associations}
+\scriptsize
+\resizebox{\textwidth}{!}{\input{generated/association_table.tex}}
+\end{table}
+
+\section{Log-domain numerical audit}
+
+The same numerical construction was used for all \HodgeExtractionN{} cases: a
+4-mm analysis grid, a raised-cosine taper over 4 voxels from the valid-domain
+boundary, Gaussian smoothing with $\sigma=2.5$ voxels, and 6-voxel zero padding.
+The stationary logarithm used six scaling-and-squaring steps, no more than six
+symmetric residual updates, and a maximum relative reconstruction RMSE of
+0.02. All \HodgeQCPassN{} cases passed. In the analysis cohort, the median
+minimum input Jacobian was \VelocityMinimumJacobianMedian{} (IQR
+\VelocityMinimumJacobianQOne--\VelocityMinimumJacobianQThree), and median
+relative exponentiation RMSE was \VelocityReconstructionErrorMedian{} (IQR
+\VelocityReconstructionErrorQOne--\VelocityReconstructionErrorQThree).
+
+The Fourier projection was evaluated on the entire padded grid. Nonzero
+frequencies were projected parallel and perpendicular to their wave vector; the
+zero-frequency coefficient was retained as the harmonic component. Component
+energies reconstructed total energy to floating-point precision in every case.
+Because Hodge components on bounded domains depend on boundary conditions, the
+reported fractions apply only to this stated tapered periodic construction.
+
+\section{Left-dominant-lesion sensitivity analysis}
+
+Excluding the single right-dominant case left $n=\LeftOnlyN$. The mean MAE
+advantage of displacement features was \LeftOnlyDeformationAdvantage{} points
+(95\% participant-bootstrap interval \LeftOnlyDeformationCILow{} to
+\LeftOnlyDeformationCIHigh{}), again failing the superiority
+criterion.
+
+\section{Interpretation boundary}
+
+The stationary vector field is a group-log registration parameter with
+displacement units over an arbitrary unit interval. It is not the original
+time-dependent velocity optimized by LDDMM and is not physical tissue velocity.
+The curl-free component, divergence, and log-Jacobian are geometric quantities;
+without a constitutive model, tissue parameters, loads, and mechanical boundary
+conditions, none is an estimator of pressure.
+
+\end{document}

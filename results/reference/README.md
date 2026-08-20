@@ -1,18 +1,26 @@
 # Aggregate reference results
 
-These files are frozen, non-participant-level outputs from the verified ARC run.
-They allow the manuscript to compile and its reported values to be checked
-without distributing subject-level clinical data or images.
+These are frozen, non-participant-level outputs from the verified ARC run. They
+allow every manuscript value and statistical figure to be regenerated without
+redistributing participant clinical data or images.
 
 - `model_summary.csv`: performance aggregated over 20 repeated outer-CV splits;
-- `paired_comparisons.csv`: participant-level paired error contrasts;
+- `model_mae_inference.csv`: participant-bootstrap MAE intervals;
+- `paired_comparisons.csv`: aggregate paired-error contrasts and intervals;
 - `metrics_by_repeat.csv`: aggregate performance for each repeat and model;
+- `deformation_associations.csv`: 12 descriptive correlations with bootstrap
+  intervals and Holm-adjusted p-values;
+- `left_only_model_summary.csv` and `left_only_paired_comparisons.csv`:
+  left-dominant-lesion sensitivity results;
 - `coefficient_summary.csv`: aggregate standardized ridge-coefficient stability;
-- `cohort_summary.json`: aggregate cohort/deformation descriptive statistics;
+- `cohort_summary.json`: aggregate cohort, displacement, and Hodge summaries;
+- `hodge_summary.json`: 214-case numerical decomposition audit;
+- `hodge_config.json`: fixed log-domain and Hodge settings plus input hash;
 - `cohort_audit.json`: full 1,070-map spatial-support audit;
 - `legacy_feature_comparison.csv`: v1/v2 predictive-feature identity check;
-- `analysis_config.json`: exact model configuration and input provenance;
-- `figures/`: paper figures generated from the frozen analysis.
+- `analysis_config.json`: model configuration and input provenance;
+- `reproduction_check.json`: exact legacy-output and new-analysis checks;
+- `figures/`: technical paper figures.
 
-Regenerate a complete private run under `results/runs/`; that directory is
-ignored by git because it contains case identifiers and predictions.
+The case-level Hodge manifest, joined design, fold coefficients, and out-of-fold
+predictions are generated under `results/runs/` and intentionally ignored.

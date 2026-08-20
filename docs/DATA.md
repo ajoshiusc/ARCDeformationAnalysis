@@ -25,6 +25,7 @@ the ARC root.
 | `mass_effect_manifest.csv` | unique `case_id`, `subject`, `session`, method/QC columns, deformation summaries | Primary imaging predictors |
 | `case_metrics.csv` | unique `case_id`, `wab_aq`, age, assessment delay, lesion burden/location | Outcome and reference predictors |
 | `uncertainty_manifest.csv` | unique `case_id`, soft lesion and entropy summaries | Optional sensitivity model |
+| `hodge_manifest.csv` | unique `case_id`, method/QC fields, aggregate log-velocity/Hodge descriptors | Generated secondary predictors |
 
 The model rejects duplicate cases, mixed deformation-method versions, multiple
 cases per participant after matching, and missing outcome values. All models in
@@ -57,3 +58,21 @@ excluded from the stored lesion-effect field.
 The `.gitignore` enforces these exclusions. Only aggregate model metrics,
 aggregate coefficient summaries, provenance hashes, and manuscript figures are
 checked in.
+
+## Reproducibility boundary
+
+This repository contains all code from the deformation-derivative inputs to the
+paper outputs. It does not duplicate external applications, source imaging, or
+trained weights. In particular:
+
+- lesion training, inference, probability export, and validation code is pinned
+  in `docs/LESION_DELINEATION.md`;
+- nnU-Net and trained checkpoints are external software/data dependencies;
+- BrainSuite/SVReg is an external application;
+- the ARC images and participant-level derivatives remain under the ARC data
+  root and are read-only.
+
+This boundary is intentional: checking participant images or multi-gigabyte
+model checkpoints into the public analysis repository would be neither portable
+nor appropriate. The exact paths, versions, hashes, and commands needed at the
+boundary are recorded instead.

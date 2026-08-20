@@ -40,7 +40,7 @@ uses `J = det(I + grad(u))`; log-Jacobian asymmetry is the ipsilesional log-J
 minus its reflected contralesional homolog. Nonpositive Jacobians are invalid.
 
 Summaries are calculated within 3-5, 5-10, 10-20, and 20-40 mm shells. The
-predictive model uses eight prespecified features in the combined 3-20 mm shell:
+predictive model uses eight fixed features in the combined 3-20 mm shell:
 median and 95th-percentile magnitude, median and mean-absolute radial
 displacement, outward and inward radial integrals, and positive and negative
 log-Jacobian integrals.
@@ -56,6 +56,37 @@ A case passes if:
 Direct/non-inpainted and inpainted SVReg fields are normalized identically. The
 magnitude of their difference is registration sensitivity and is never treated
 as biological deformation.
+
+## Stationary log-velocity embedding
+
+The lesional-only mirrored-difference field is not assumed to be the original
+SVReg diffeomorphism. For exploratory log-domain analysis it is embedded using
+one cohort-wide numerical protocol:
+
+- sample the vector field and valid mask on a 4 mm grid;
+- taper the field from zero to full weight over 4 voxels inward from the valid
+  boundary using a raised cosine;
+- apply Gaussian smoothing with sigma 2.5 voxels (10 mm);
+- zero-pad by 6 voxels (24 mm) on each side;
+- require `det(I + grad(u)) > 0` everywhere;
+- approximate `v = log(Id + u)` with six scaling-and-squaring steps and at most
+  six symmetric residual corrections;
+- require a positive-Jacobian `exp(v)` reconstruction and relative
+  reconstruction RMSE no greater than 0.02.
+
+The resulting `v` is a stationary registration parameter. It is neither the
+time-dependent velocity used by an LDDMM optimizer nor a measured physical
+tissue velocity.
+
+On the padded periodic grid, Fourier coefficients are projected parallel and
+perpendicular to each nonzero wave vector to obtain curl-free and
+divergence-free components. The zero-frequency coefficient is harmonic. The
+model uses total log-velocity RMS and the curl-free and divergence-free energy
+fractions. Tapering, padding, and the periodic boundary convention are part of
+the estimand because Hodge components are boundary-condition dependent.
+
+No output is pressure. Pressure recovery requires a constitutive mechanical
+model, tissue parameters, loads, and boundary conditions absent from ARC.
 
 ## Prediction
 
@@ -76,3 +107,10 @@ participant bootstrap 95% interval. A paired Wilcoxon signed-rank test is also
 reported and Holm-adjusted, but it tests a rank/distributional contrast rather
 than the mean advantage. A superiority statement requires the mean-advantage
 interval to exclude zero.
+
+An intercept-only benchmark, participant-bootstrap intervals for each model's
+absolute MAE, a left-dominant-lesion-only rerun, and 12 Holm-controlled
+descriptive Spearman correlations are also reported. Hodge models test the
+three log-domain descriptors after conventional lesion features and again after
+the displacement summaries. WAB aphasia subtype and individual language tasks
+are not modeled post hoc.

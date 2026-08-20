@@ -7,6 +7,10 @@
   "rows_after_deformation_qc": 210,
   "uncertainty_coverage_before_matching": 1.0,
   "uncertainty_models_used": true,
+  "hodge_coverage_before_matching": 1.0,
+  "hodge_models_used": true,
+  "hodge_manifest_rows": 214,
+  "hodge_qc_pass_rows": 214,
   "analysis_subjects": 210,
   "model_config": {
     "outcome": "wab_aq",
@@ -21,6 +25,7 @@
     "maximum_folding_fraction": 0.05,
     "minimum_near_lesion_voxels": 1000,
     "minimum_uncertainty_coverage": 0.9,
+    "minimum_hodge_coverage": 0.9,
     "alpha_grid": [
       0.0001,
       0.00031622776601683794,
@@ -42,6 +47,7 @@
     ]
   },
   "feature_sets": {
+    "intercept_only": [],
     "clinical_only": [
       "age_at_stroke",
       "log1p_wab_days"
@@ -135,6 +141,36 @@
       "me_mass_effect_3_20mm_inward_integral_ml_mm",
       "me_mass_effect_3_20mm_logjac_expansion_integral_ml",
       "me_mass_effect_3_20mm_logjac_compression_integral_ml"
+    ],
+    "lesion_plus_hodge": [
+      "age_at_stroke",
+      "log1p_wab_days",
+      "lesion_volume_ml",
+      "left_language_lesion_ml",
+      "right_language_lesion_ml",
+      "lesion_laterality_index",
+      "hhd_total_rms_mm",
+      "hhd_curl_free_energy_fraction",
+      "hhd_divergence_free_energy_fraction"
+    ],
+    "lesion_plus_mass_effect_plus_hodge": [
+      "age_at_stroke",
+      "log1p_wab_days",
+      "lesion_volume_ml",
+      "left_language_lesion_ml",
+      "right_language_lesion_ml",
+      "lesion_laterality_index",
+      "me_mass_effect_3_20mm_magnitude_mm_median",
+      "me_mass_effect_3_20mm_magnitude_mm_p95",
+      "me_mass_effect_3_20mm_radial_mm_median",
+      "me_mass_effect_3_20mm_mean_absolute_radial_mm",
+      "me_mass_effect_3_20mm_outward_integral_ml_mm",
+      "me_mass_effect_3_20mm_inward_integral_ml_mm",
+      "me_mass_effect_3_20mm_logjac_expansion_integral_ml",
+      "me_mass_effect_3_20mm_logjac_compression_integral_ml",
+      "hhd_total_rms_mm",
+      "hhd_curl_free_energy_fraction",
+      "hhd_divergence_free_energy_fraction"
     ]
   },
   "inputs": {
@@ -143,9 +179,16 @@
     "clinical_table": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv",
     "clinical_table_sha256": "521f37aab0a6da1b4a284a77abb720a0eda4e40ecb1deaff23ebcbeb236c2ca5",
     "uncertainty_manifest": "/home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv",
-    "uncertainty_manifest_sha256": "937e735b1e9da51e3b39b89946e028420f95d17e312c3713856cf30694916aba"
+    "uncertainty_manifest_sha256": "937e735b1e9da51e3b39b89946e028420f95d17e312c3713856cf30694916aba",
+    "hodge_manifest": "/tmp/arc-hodge-final-20260819/hodge_manifest.csv",
+    "hodge_manifest_sha256": "660f308c412785b800672f08e76989c5464528c6e1f39e2719e903673a01488a"
   },
   "primary_estimand": "participant mean absolute-error advantage: lesion_standard minus lesion_plus_mass_effect, averaged across repeats",
   "superiority_rule": "primary participant-bootstrap CI must exclude zero",
+  "secondary_analyses": {
+    "hodge": "Stationary log-velocity of a regularized displacement embedding, followed by periodic-grid Helmholtz--Hodge decomposition; a registration parameter, not physical velocity or pressure",
+    "left_lesion_only_subjects": 209,
+    "descriptive_association_multiplicity": "Holm adjustment across 12 tests"
+  },
   "interpretation_warning": "Cross-sectional lesion-associated deformation proxy; not physical ground-truth mass effect or pressure."
 }

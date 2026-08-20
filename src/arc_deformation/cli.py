@@ -10,6 +10,7 @@ from typing import Any
 from arc_deformation.audit import run_audit
 from arc_deformation.config import config_value, load_config
 from arc_deformation.extract import ExtractionInputs, collect_metrics, extract_case
+from arc_deformation.hodge import HodgeConfig, run_hodge_extraction
 from arc_deformation.io import ensure_output_outside_data
 from arc_deformation.modeling import ModelConfig, run_modeling
 from arc_deformation.reporting import generate_report
@@ -32,6 +33,7 @@ def _add_model_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--mass-effect-manifest", type=Path)
     parser.add_argument("--clinical-table", type=Path)
     parser.add_argument("--uncertainty-manifest", type=Path)
+    parser.add_argument("--hodge-manifest", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--outcome")
     parser.add_argument("--outer-folds", type=int)
@@ -57,6 +59,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     model = subparsers.add_parser("model", help="Run repeated nested-CV model comparison")
     _add_model_arguments(model)
+
+    hodge = subparsers.add_parser(
+        "hodge", help="Compute stationary log-velocity and Hodge descriptors"
+    )
+    hodge.add_argument("--config", type=Path)
+    hodge.add_argument("--arc-root", type=Path)
+    hodge.add_argument("--mass-effect-manifest", type=Path)
+    hodge.add_argument("--output-dir", type=Path)
+    hodge.add_argument("--stride", type=int)
+    hodge.add_argument("--padding", type=int)
+    hodge.add_argument("--boundary-taper-width-voxels", type=float)
+    hodge.add_argument("--displacement-smoothing-sigma-voxels", type=float)
+    hodge.add_argument("--velocity-squaring-steps", type=int)
+    hodge.add_argument("--velocity-maximum-iterations", type=int)
+    hodge.add_argument("--velocity-reconstruction-tolerance", type=float)
+    hodge.add_argument("--n-jobs", type=int)
 
     report = subparsers.add_parser("report", help="Generate aggregate manuscript assets")
     report.add_argument("--results-dir", type=Path, required=True)
@@ -116,6 +134,8 @@ def _model_from_args(args: argparse.Namespace, config: dict[str, Any]) -> Path:
         args.uncertainty_manifest, config, "paths", "uncertainty_manifest"
     )
     uncertainty = _path(str(uncertainty_value)) if uncertainty_value else None
+    hodge_value = _resolve(args.hodge_manifest, config, "paths", "hodge_manifest")
+    hodge = _path(str(hodge_value)) if hodge_value else None
     output_value = _resolve(args.output_dir, config, "paths", "output_root")
     output = _required_path(output_value, "output_dir")
     if args.output_dir is None and config_value(config, "paths", "output_root"):
@@ -149,9 +169,78 @@ def _model_from_args(args: argparse.Namespace, config: dict[str, Any]) -> Path:
         minimum_uncertainty_coverage=float(
             config_value(config, "model", "minimum_uncertainty_coverage", 0.90)
         ),
+        minimum_hodge_coverage=float(
+            config_value(config, "model", "minimum_hodge_coverage", 0.90)
+        ),
     )
-    run_modeling(mass, clinical, output, uncertainty, model_config)
+    run_modeling(
+        mass,
+        clinical,
+        output,
+        uncertainty_manifest=uncertainty,
+        config=model_config,
+        hodge_manifest=hodge,
+    )
     return output
+
+
+def _hodge_from_args(args: argparse.Namespace, config: dict[str, Any]) -> Path:
+    defaults = HodgeConfig()
+    arc_root = _required_path(_resolve(args.arc_root, config, "paths", "arc_root"), "arc_root")
+    mass = _required_path(
+        _resolve(args.mass_effect_manifest, config, "paths", "mass_effect_manifest"),
+        "mass_effect_manifest",
+    )
+    output_value = _resolve(args.output_dir, config, "paths", "output_root")
+    output = _required_path(output_value, "output_dir")
+    if args.output_dir is None and config_value(config, "paths", "output_root"):
+        output = output / "hodge"
+    output = ensure_output_outside_data(output, arc_root)
+
+    def setting(argument: Any, key: str, default: Any) -> Any:
+        return argument if argument is not None else config_value(config, "hodge", key, default)
+
+    hodge_config = HodgeConfig(
+        stride=int(setting(args.stride, "stride", defaults.stride)),
+        padding=int(setting(args.padding, "padding", defaults.padding)),
+        boundary_taper_width_voxels=float(
+            setting(
+                args.boundary_taper_width_voxels,
+                "boundary_taper_width_voxels",
+                defaults.boundary_taper_width_voxels,
+            )
+        ),
+        displacement_smoothing_sigma_voxels=float(
+            setting(
+                args.displacement_smoothing_sigma_voxels,
+                "displacement_smoothing_sigma_voxels",
+                defaults.displacement_smoothing_sigma_voxels,
+            )
+        ),
+        velocity_squaring_steps=int(
+            setting(
+                args.velocity_squaring_steps,
+                "velocity_squaring_steps",
+                defaults.velocity_squaring_steps,
+            )
+        ),
+        velocity_maximum_iterations=int(
+            setting(
+                args.velocity_maximum_iterations,
+                "velocity_maximum_iterations",
+                defaults.velocity_maximum_iterations,
+            )
+        ),
+        velocity_reconstruction_tolerance=float(
+            setting(
+                args.velocity_reconstruction_tolerance,
+                "velocity_reconstruction_tolerance",
+                defaults.velocity_reconstruction_tolerance,
+            )
+        ),
+    )
+    n_jobs = int(setting(args.n_jobs, "n_jobs", 1))
+    return run_hodge_extraction(mass, arc_root, output, hodge_config, n_jobs)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -192,6 +281,10 @@ def main(argv: list[str] | None = None) -> int:
         output = _model_from_args(args, _load_optional(args.config))
         print(output)
         return 0
+    if args.command == "hodge":
+        manifest = _hodge_from_args(args, _load_optional(args.config))
+        print(manifest)
+        return 0
     if args.command == "reproduce":
         config = load_config(args.config)
         arc_root = _required_path(config_value(config, "paths", "arc_root"), "arc_root")
@@ -208,10 +301,25 @@ def main(argv: list[str] | None = None) -> int:
             int(config_value(config, "audit", "expected_cases", 214)),
             bool(config_value(config, "audit", "check_maps", False)),
         )
+        hodge_namespace = argparse.Namespace(
+            arc_root=None,
+            mass_effect_manifest=None,
+            output_dir=None,
+            stride=None,
+            padding=None,
+            boundary_taper_width_voxels=None,
+            displacement_smoothing_sigma_voxels=None,
+            velocity_squaring_steps=None,
+            velocity_maximum_iterations=None,
+            velocity_reconstruction_tolerance=None,
+            n_jobs=None,
+        )
+        hodge_manifest = _hodge_from_args(hodge_namespace, config)
         model_namespace = argparse.Namespace(
             mass_effect_manifest=None,
             clinical_table=None,
             uncertainty_manifest=None,
+            hodge_manifest=hodge_manifest,
             output_dir=None,
             outcome=None,
             outer_folds=None,

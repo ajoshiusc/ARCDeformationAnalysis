@@ -1,8 +1,9 @@
-"""Prespecified method identifiers and model features."""
+"""Fixed method identifiers and model features."""
 
 from __future__ import annotations
 
 METHOD_VERSION = "contralateral_control_lesional_only_v2"
+HODGE_METHOD_VERSION = "log_svf_tapered_periodic_fft_hhd_v1"
 SHELLS_MM = ((3.0, 5.0), (5.0, 10.0), (10.0, 20.0), (20.0, 40.0))
 
 CLINICAL_FEATURES = ("age_at_stroke", "log1p_wab_days")
@@ -21,6 +22,11 @@ DEFORMATION_FEATURES = (
     "me_mass_effect_3_20mm_inward_integral_ml_mm",
     "me_mass_effect_3_20mm_logjac_expansion_integral_ml",
     "me_mass_effect_3_20mm_logjac_compression_integral_ml",
+)
+HODGE_FEATURES = (
+    "hhd_total_rms_mm",
+    "hhd_curl_free_energy_fraction",
+    "hhd_divergence_free_energy_fraction",
 )
 REGISTRATION_QC_FEATURES = (
     "me_registration_sensitivity_3_20mm_mm_median",

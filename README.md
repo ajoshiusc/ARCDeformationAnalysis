@@ -1,29 +1,37 @@
 # ARC Deformation Analysis
 
-Reproducible analysis of contralateral-normalized, lesion-associated deformation
-in the Aphasia Recovery Cohort (ARC). The repository extracts a cross-sectional
-registration-derived deformation proxy, audits its spatial support, and tests its
-incremental value for predicting Western Aphasia Battery Aphasia Quotient (WAB-AQ).
+Production-oriented code and manuscript sources for contralateral-normalized
+deformation analysis in the [Aphasia Recovery Cohort](https://doi.org/10.18112/openneuro.ds004884.v1.0.2).
+The package constructs a lesional-only displacement proxy, validates a
+stationary log-velocity embedding, performs a periodic Helmholtz--Hodge
+decomposition, and tests incremental prediction of Western Aphasia Battery
+Aphasia Quotient (WAB-AQ).
 
-The central result is deliberately conservative: in 210 QC-passing ARC
-participants, adding deformation to a conventional lesion model changed held-out
-mean absolute error by **0.38 AQ points** (95% participant-bootstrap CI
-**-0.50 to 1.17**). The interval crosses zero, so the analysis does not establish
-incremental predictive benefit.
+The result is conservative. In 210 QC-passing participants, adding displacement
+features to a conventional lesion model changed held-out MAE by 0.38 AQ points
+(95% participant-bootstrap CI −0.50 to 1.17). Log-velocity Hodge features did
+not improve prediction after lesion or displacement features. The analysis does
+not estimate pressure, physical tissue velocity, force, or causal mass effect.
 
-## What this repository contains
+## Repository scope
 
-- `src/arc_deformation/`: installable analysis package;
-- `tests/`: unit and smoke tests for geometry, QC, and modeling;
-- `config/`: portable ARC configuration example;
-- `results/reference/`: aggregate, non-participant-level results from the frozen run;
-- `paper/`: standalone LaTeX manuscript and verified bibliography;
-- `docs/`: method, data-governance, and provenance details.
+- `src/arc_deformation/`: installable extraction, audit, log-domain, Hodge,
+  modeling, and reporting package;
+- `tests/`: deterministic geometry, decomposition, QC, and modeling tests;
+- `config/`: portable full-run configuration;
+- `results/reference/`: aggregate, non-participant-level frozen results;
+- `paper/`: Imaging Neuroscience manuscript, supplement, cover letter, and
+  verified bibliography;
+- `docs/`: input contracts, method specification, lesion-delineation boundary,
+  and provenance.
 
-Raw ARC images, subject-level tables, NIfTI derivatives, and out-of-fold
-participant predictions are intentionally not committed.
+The repository is self-contained from the documented derivative-input boundary.
+It does not redistribute raw ARC images, trained nnU-Net weights, BrainSuite, or
+participant-level outputs. Lesion delineation code is public in the pinned
+[TR2StrokeSeg source](https://github.com/ajoshiusc/TR2StrokeSeg/tree/286cd508f1bbbcbc3c5182db32db41a5b4797eb7);
+see `docs/LESION_DELINEATION.md` for the exact handoff.
 
-## Quick start
+## Install and test
 
 Python 3.11 or newer is required.
 
@@ -31,58 +39,79 @@ Python 3.11 or newer is required.
 python -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 .venv/bin/pytest
+.venv/bin/ruff check src tests
 ```
 
-Audit the frozen ARC deformation derivative without writing into ARC:
+## Reproduce the analysis
+
+Copy `config/arc.example.toml` to `config/local.toml`, change only local paths,
+and run:
 
 ```bash
-arc-deformation audit \
-  --arc-root /home/ajoshi/project2_ajoshi_1183/data/ARC \
-  --manifest /home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv \
-  --output-dir results/runs/audit
+.venv/bin/python -m arc_deformation.cli reproduce --config config/local.toml
 ```
 
-Reproduce the predictive comparison:
+The full command performs a read-only derivative audit, extracts log-velocity
+Hodge descriptors, runs repeated nested cross-validation and sensitivity
+analyses, and creates aggregate paper assets. It refuses to place outputs below
+the ARC data root.
+
+Individual stages are also available:
 
 ```bash
-arc-deformation model \
-  --mass-effect-manifest /home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_mass_effect_v2/mass_effect_manifest.csv \
-  --clinical-table /home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/aq_mass_effect_inputs_v2/case_metrics.csv \
-  --uncertainty-manifest /home/ajoshi/project2_ajoshi_1183/data/ARC/derivatives/lesion_uncertainty/uncertainty_manifest.csv \
-  --output-dir results/runs/aq_comparison \
-  --n-jobs 4
+arc-deformation audit --config config/local.toml
+arc-deformation hodge --config config/local.toml
+arc-deformation model --config config/local.toml \
+  --hodge-manifest results/runs/hodge/hodge_manifest.csv
+arc-deformation report \
+  --results-dir results/runs/aq_comparison \
+  --output-dir paper/generated
 ```
 
-Case extraction is deliberately explicit and scheduler-friendly: run
-`arc-deformation extract-case --help` for one acquisition, then rebuild a
-deterministically sorted cohort manifest with
-`arc-deformation collect --output-dir results/runs/deformation`.
+`arc-deformation extract-case --help` documents the explicit inputs for one
+deformation case. `arc-deformation collect` rebuilds a deterministically sorted
+cohort manifest.
 
-Build the checked-in manuscript from the frozen aggregate results:
+## Build the submission
 
 ```bash
-make paper
+make submission
 ```
 
-For a full local run, copy `config/arc.example.toml` to `config/local.toml`,
-update paths, and run `make reproduce CONFIG=config/local.toml`.
+This regenerates every table, macro, and statistical figure from aggregate CSV
+and JSON outputs, then builds:
+
+- `paper/main.pdf`;
+- `paper/supplement.pdf`;
+- `paper/cover_letter.pdf`.
+
+The final author list, funding, and competing-interest declaration are factual
+metadata that must be confirmed by the author before upload; they are never
+inferred by the code.
 
 ## Interpretation boundary
 
-The output is a **cross-sectional lesion-associated deformation proxy**, not
-physical ground-truth mass effect and not pressure. A chronic scan cannot
-separate premorbid asymmetry, tissue collapse, ventricular expansion, remodeling,
-and residual registration error. Synthetic inpainting-target voxels and their
-mirrors are excluded from every biological summary.
+The stored displacement is an affine-removed, mirrored-difference,
+lesional-only registration proxy. Its regularized stationary logarithm is a
+group parameter with displacement units over an arbitrary unit interval—not a
+measured velocity in mm/s. Hodge components depend on the stated taper,
+smoothing, padding, and periodic boundary convention. Pressure reconstruction
+would require a constitutive biomechanical model, material parameters, loads,
+and boundary conditions that ARC does not provide.
 
-## Reproducibility
+## Reproducibility and privacy
 
-The reference run used one scan per participant, 5-fold outer CV repeated 20
-times, 4-fold inner CV for ridge-penalty selection, seed 2026, and identical
-outer splits for all models. Input SHA-256 values and exact result provenance are
-listed in `docs/RESULTS_PROVENANCE.md`.
+The frozen analysis used 20 repetitions of five-fold outer CV, four-fold inner
+CV, ridge penalties selected entirely within training folds, 5,000 participant
+bootstrap resamples, and seed 2026. Input SHA-256 values and result provenance
+are in `docs/RESULTS_PROVENANCE.md`.
+
+Raw images, NIfTI derivatives, joined clinical/design tables, per-participant
+Hodge descriptors, coefficients by fold, and out-of-fold predictions are
+ignored. Only aggregate metrics, aggregate coefficient summaries, audit hashes,
+and manuscript figures are committed.
 
 ## Citation
 
-See `CITATION.cff`. Cite the ARC data descriptor and BrainSuite/SVReg methods as
-listed in `paper/references.bib`.
+See `CITATION.cff` and `paper/references.bib`. The public repository is
+<https://github.com/ajoshiusc/ARCDeformationAnalysis>.

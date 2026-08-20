@@ -21,7 +21,7 @@ results/private/
 *.nii
 *.nii.gz
 
-# LaTeX build products (the reviewed PDF is retained)
+# LaTeX build products (reviewed submission PDFs are retained)
 paper/*.aux
 paper/*.bbl
 paper/*.blg
